@@ -4,290 +4,610 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bennett 바코드 생성기 - Ver 2.0</title>
+    <title>Bennett 바코드 생성기 - 2.0 Ver</title>
     
     <link rel="icon" href="https://raw.githubusercontent.com/qogmlwo000/gwj2pickpackhtp/main/Bennett.ico" type="image/x-icon">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- 폰트 변경: Noto Sans KR을 메인으로 설정 -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        /* Theme Variables */
+        /* --- Modern Design System --- */
         :root {
-            --bg-primary: #f8fafc;
-            --bg-secondary: #ffffff;
-            --bg-card: #f1f5f9;
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --border-color: #e2e8f0;
-            --scrollbar-track: #e2e8f0;
-            --scrollbar-thumb: #94a3b8;
+            --transition-speed: 0.3s;
+            --font-main: 'Noto Sans KR', sans-serif;
+            --font-mono: 'Noto Sans KR', monospace;
+        }
+        
+        /* Modern Dark Theme (Default) */
+        :root {
+            --bg-body: #020617;
+            --bg-glass: rgba(15, 23, 42, 0.7);
+            --bg-card: rgba(30, 41, 59, 0.4);
+            --bg-input: rgba(2, 6, 23, 0.5);
+            
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(255, 255, 255, 0.15);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-tertiary: #64748b;
+            
+            --accent-primary: #6366f1; /* Indigo */
+            --accent-glow: rgba(99, 102, 241, 0.5);
+            --accent-secondary: #ec4899; /* Pink */
+            --success: #10b981;
+            
+            --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
 
-        [data-theme="dark"] {
-            --bg-primary: #111827;
-            --bg-secondary: #1f2937;
-            --bg-card: #374151;
-            --text-primary: #f3f4f6;
-            --text-secondary: #9ca3af;
-            --border-color: #4b5563;
-            --scrollbar-track: #2d3748;
-            --scrollbar-thumb: #4a5568;
+        /* Light Theme Override */
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --bg-card: rgba(255, 255, 255, 0.7);
+            --bg-input: rgba(248, 250, 252, 0.8);
+            
+            --border-glass: rgba(0, 0, 0, 0.06);
+            --border-highlight: rgba(0, 0, 0, 0.1);
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #94a3b8;
+            
+            --accent-primary: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.3);
+            --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
         }
 
         body { 
-            font-family: 'Inter', sans-serif; 
-            scrollbar-width: thin;
-            background-color: var(--bg-primary);
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
             color: var(--text-primary);
-            transition: background-color 0.3s, color 0.3s;
+            overflow: hidden; /* App container handles scroll */
         }
 
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
-        ::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb); border-radius: 4px; }
-        
+        /* Ambient Background Mesh */
+        .ambient-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: 
+                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.08), transparent 25%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--text-tertiary); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+        /* Layout */
         .app-container { display: flex; height: 100vh; }
         
         #sidebar {
-            width: 300px;
-            transition: margin-left 0.3s ease-in-out, transform 0.3s ease-in-out;
-            position: fixed;
-            top: 0;
-            left: 0;
+            width: 340px;
             height: 100%;
-            z-index: 40;
+            position: fixed; top: 0; left: 0; z-index: 50;
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-right: 1px solid var(--border-glass);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             transform: translateX(-100%);
-            background-color: var(--bg-secondary);
-            border-right: 2px solid #3b82f6;
+            display: flex; flex-direction: column;
+            box-shadow: var(--shadow-glass);
         }
         
-        #sidebar.open { transform: translateX(0); }
-        
-        #main-content {
-            transition: margin-left 0.3s ease-in-out;
+        #main-content { 
+            flex: 1;
             width: 100%;
-            background-color: var(--bg-primary);
+            height: 100vh;
+            display: flex; flex-direction: column;
+            transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            background: transparent;
         }
 
         @media (min-width: 1024px) {
-            #sidebar {
-                position: static;
-                transform: translateX(0);
-            }
-            #main-content {
-                flex: 1;
-                min-width: 0;
-            }
-            .app-container.sidebar-collapsed #sidebar {
-                margin-left: -300px;
-            }
-            #sidebar-toggle-desktop { display: block; }
+            #sidebar { position: static; transform: translateX(0); }
+            .app-container.sidebar-collapsed #sidebar { margin-left: -340px; }
+            #sidebar-toggle-desktop { display: flex; }
             #sidebar-toggle-mobile { display: none; }
         }
         @media (max-width: 1023px) {
+            #sidebar.open { transform: translateX(0); }
             #sidebar-toggle-desktop { display: none; }
-            #sidebar-toggle-mobile { display: block; }
+            #sidebar-toggle-mobile { display: flex; }
         }
 
-        /* Theme Toggle */
-        .theme-toggle {
-            position: relative;
-            width: 60px;
-            height: 30px;
+        /* Components: Glass Card */
+        .glass-card {
             background: var(--bg-card);
-            border-radius: 30px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            padding: 3px;
-            border: 2px solid var(--border-color);
-            transition: background-color 0.3s;
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
+        .glass-card:hover {
+            border-color: var(--border-highlight);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border-highlight);
+            transform: translateY(-2px);
+        }
+
+        /* Inputs */
+        textarea, input[type="text"], input[type="number"], select {
+            background: var(--bg-input);
+            border: 1px solid var(--border-glass);
+            color: var(--text-primary);
+            border-radius: 12px;
+            padding: 12px;
+            font-family: var(--font-mono); /* 데이터 입력부는 모노스페이스 유지 */
+            font-size: 0.875rem;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            background: var(--bg-card);
+        }
+        /* Select 폰트는 일반 폰트 사용 */
+        select { font-family: var(--font-main); }
         
-        .theme-toggle-slider {
-            width: 22px;
-            height: 22px;
-            background: #3b82f6;
+        label {
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            margin: 10px 0;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px; width: 20px;
             border-radius: 50%;
-            transition: transform 0.3s ease;
-            display: flex;
+            background: var(--accent-primary);
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px var(--accent-glow);
+            border: 2px solid var(--bg-body);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px;
+            cursor: pointer;
+            background: var(--border-glass);
+            border-radius: 2px;
+        }
+
+        /* Buttons */
+        .btn-modern {
+            position: relative;
+            overflow: hidden;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            gap: 8px;
+            font-size: 0.9rem;
+            word-break: keep-all; /* 한글 줄바꿈 방지 */
+            white-space: nowrap;
         }
         
-        [data-theme="dark"] .theme-toggle-slider {
-            transform: translateX(30px);
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            box-shadow: 0 4px 15px var(--accent-glow);
         }
-
-        #main-title { 
-            animation: color-cycle 10s infinite linear; 
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--accent-glow);
+            filter: brightness(1.1);
         }
         
-        @keyframes color-cycle {
-            0%   { color: #FF0000; } 14%  { color: #FF7F00; } 28%  { color: #FFFF00; }
-            42%  { color: #00FF00; } 57%  { color: #0000FF; } 71%  { color: #4B0082; }
-            85%  { color: #9400D3; } 100% { color: #FF0000; }
-        }
-
-        /* Themed Elements */
-        .bg-themed { background-color: var(--bg-secondary); transition: background-color 0.3s; }
-        .bg-card { background-color: var(--bg-card); transition: background-color 0.3s; }
-        .text-themed { color: var(--text-primary); transition: color 0.3s; }
-        .text-muted { color: var(--text-secondary); transition: color 0.3s; }
-        .border-themed { border-color: var(--border-color); transition: border-color 0.3s; }
-
-        .input-themed {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
+        .btn-glass {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-glass);
             color: var(--text-primary);
-            transition: all 0.3s;
+        }
+        .btn-glass:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--text-tertiary);
         }
 
-        .input-themed:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #f87171;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
         }
 
-        /* 3 Column Layout */
-        .three-col-grid {
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* Typography & Header */
+        .gradient-text {
+            background: linear-gradient(to right, #818cf8, #e879f9, #2dd4bf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        
+        /* Barcode Item */
+        .barcode-card {
+            background: white; /* Barcodes need white bg */
+            border-radius: 12px;
+            padding: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            border: 2px solid transparent;
+        }
+        [data-theme="dark"] .barcode-card {
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.1);
+        }
+        .barcode-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        
+        /* Scanned State Style */
+        .barcode-card.scanned {
+            border-color: var(--success);
+            background: #f0fdf4; /* Very light green */
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+            transform: scale(1.02);
+            z-index: 20;
+        }
+        .barcode-card.scanned::after {
+            content: '✓ SCANNED';
+            position: absolute;
+            top: -10px; right: 10px;
+            background: var(--success);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 900;
+            padding: 4px 10px;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+            animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bounceIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .barcode-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .action-btn:hover {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 3 Column Grid */
+        .modern-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
+            gap: 1.5rem;
+            height: 100%;
+        }
+        @media (max-width: 1400px) { .modern-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 900px) { .modern-grid { grid-template-columns: 1fr; } }
+
+        /* Theme Toggle Switch */
+        .switch-toggle {
+            position: relative;
+            width: 50px; height: 26px;
+            background: var(--bg-input);
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid var(--border-glass);
+            transition: 0.3s;
+        }
+        .switch-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 2px;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        [data-theme="light"] .switch-toggle::after { transform: translateX(24px); background: #f59e0b; }
+
+        /* Checkbox */
+        .custom-checkbox {
+            appearance: none;
+            width: 20px; height: 20px;
+            border: 2px solid var(--border-glass);
+            border-radius: 6px;
+            background: var(--bg-input);
+            cursor: pointer;
+            position: relative;
+            transition: 0.2s;
+        }
+        .custom-checkbox:checked {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+        .custom-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-tertiary);
+            margin-bottom: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-glass);
         }
 
-        @media (max-width: 1536px) {
-            .three-col-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 1024px) {
-            .three-col-grid {
-                grid-template-columns: 1fr;
-            }
+        /* Glass Header */
+        .glass-header {
+            background: rgba(var(--bg-body), 0.6);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-glass);
+            position: sticky;
+            top: 0;
+            z-index: 40;
         }
     </style>
 </head>
 <body>
 
+<div class="ambient-bg"></div>
+
 <div id="app-container" class="app-container">
-    <aside id="sidebar" class="p-4 flex-shrink-0 flex flex-col space-y-4 overflow-y-auto">
-        <div class="flex items-center justify-between border-themed border-b pb-2">
-            <h2 class="text-xl font-bold text-themed">📄 바코드 설정</h2>
-            <!-- Theme Toggle -->
-            <div class="theme-toggle" id="theme-toggle" title="테마 전환">
-                <div class="theme-toggle-slider">
-                    <span id="theme-icon">🌙</span>
+    
+    <!-- MODERN SIDEBAR -->
+    <aside id="sidebar">
+        <div class="p-6 border-b border-[var(--border-glass)] flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-lg">B</div>
+                <span class="font-bold text-lg tracking-tight">설정</span>
+            </div>
+            <div class="switch-toggle" id="theme-toggle" title="테마 전환"></div>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-6 space-y-8">
+            <!-- Format Section -->
+            <div>
+                <div class="section-title">바코드 포맷</div>
+                <select id="barcode-format" class="hover:border-indigo-500/50 focus:border-indigo-500">
+                    <option value="CODE128" selected>CODE128 (표준)</option>
+                    <option value="CODE39">CODE39</option>
+                    <option value="EAN13">EAN-13 (12-13자리)</option>
+                    <option value="UPC">UPC (11-12자리)</option>
+                    <option value="ITF">ITF-14 (물류용)</option>
+                    <option value="MSI">MSI</option>
+                </select>
+            </div>
+
+            <!-- Size Section -->
+            <div>
+                <div class="section-title">크기 설정</div>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-[var(--text-secondary)]">바 두께</span>
+                            <span id="barcode-width-value" class="text-[var(--accent-primary)] font-bold font-mono">2.0</span>
+                        </div>
+                        <input type="range" id="barcode-width" min="1" max="4" value="2" step="0.1">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-[var(--text-secondary)]">높이</span>
+                            <span id="barcode-height-value" class="text-[var(--accent-primary)] font-bold font-mono">100px</span>
+                        </div>
+                        <input type="range" id="barcode-height" min="30" max="150" value="100">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Options Section -->
+            <div>
+                <div class="section-title">옵션</div>
+                <label class="flex items-center gap-3 cursor-pointer group">
+                    <input type="checkbox" id="display-value" class="custom-checkbox" checked>
+                    <span class="group-hover:text-[var(--text-primary)] transition-colors">값 텍스트 표시</span>
+                </label>
+            </div>
+
+            <!-- Info Card -->
+            <div class="glass-card !bg-gradient-to-br from-indigo-500/10 to-purple-500/10 !border-indigo-500/20">
+                <div class="flex items-start gap-3">
+                    <div class="text-indigo-400 mt-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div class="text-xs leading-relaxed text-[var(--text-secondary)]">
+                        <strong class="text-[var(--text-primary)] block mb-1">스캔 검증 모드</strong>
+                        바코드 생성 후 스캐너로 실제 바코드를 스캔해보세요. 화면의 바코드가 <span class="text-[var(--success)] font-bold">녹색</span>으로 표시됩니다.
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="bg-card p-3 rounded-lg">
-            <h3 class="font-semibold mb-2 text-themed">📄 바코드 포맷</h3>
-            <select id="barcode-format" class="w-full input-themed rounded-md py-2 px-3 text-sm">
-                <option value="CODE128" selected>CODE128</option>
-                <option value="CODE39">CODE39</option>
-                <option value="EAN13">EAN-13 (12-13자리)</option>
-                <option value="UPC">UPC (11-12자리)</option>
-                <option value="ITF">ITF-14</option>
-                <option value="MSI">MSI</option>
-            </select>
-        </div>
-
-        <div class="bg-card p-3 rounded-lg space-y-4">
-            <h3 class="font-semibold text-themed">📏 바코드 크기</h3>
-            <div>
-                <label for="barcode-width" class="text-sm text-muted">너비: <span id="barcode-width-value" class="text-blue-500 font-bold">2</span></label>
-                <input type="range" id="barcode-width" min="1" max="4" value="2" step="0.1" class="w-full h-2 bg-blue-500 rounded-lg appearance-none cursor-pointer">
-            </div>
-            <div>
-                <label for="barcode-height" class="text-sm text-muted">높이: <span id="barcode-height-value" class="text-blue-500 font-bold">100</span>px</label>
-                <input type="range" id="barcode-height" min="30" max="150" value="100" class="w-full h-2 bg-blue-500 rounded-lg appearance-none cursor-pointer">
-            </div>
-        </div>
-
-        <div class="bg-card p-3 rounded-lg">
-            <h3 class="font-semibold mb-2 text-themed">⚙️ 추가 옵션</h3>
-            <label class="flex items-center space-x-2 text-sm cursor-pointer">
-                <input type="checkbox" id="display-value" class="form-checkbox rounded text-blue-500" checked>
-                <span class="text-muted">값 표시 (텍스트)</span>
-            </label>
+        <div class="p-4 border-t border-[var(--border-glass)] text-center text-xs text-[var(--text-tertiary)]">
+            Bennett Barcode v2.0
         </div>
     </aside>
     
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
 
-    <main id="main-content" class="flex-1 flex flex-col overflow-hidden">
-        <div class="w-full bg-themed shadow-lg p-4 flex-shrink-0 border-b border-themed">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center">
-                    <button id="sidebar-toggle-desktop" class="p-2 rounded-md hover:bg-opacity-10 hover:bg-blue-500 mr-4 text-themed">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                    </button>
-                    <button id="sidebar-toggle-mobile" class="p-2 rounded-md hover:bg-opacity-10 hover:bg-blue-500 mr-4 text-themed">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                    </button>
-                    <div>
-                        <h1 id="main-title" class="text-2xl font-extrabold">🚀 Bennett 바코드 생성기 - Ver 2.0</h1>
-                        <p class="text-sm text-muted">값을 입력하면 자동으로 생성됩니다.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="p-4 flex-1 overflow-y-auto">
-            <!-- 3칸 입력 영역 -->
-            <div class="three-col-grid mb-4">
-                <div class="bg-themed p-4 rounded-lg flex-shrink-0">
-                    <label for="barcode-input-1" class="block mb-2 text-sm font-medium text-themed">바코드 값 입력 #1 (최대 100개)</label>
-                    <textarea id="barcode-input-1" rows="10" class="w-full input-themed rounded-md p-3 text-sm resize-none" placeholder="8809811720594&#10;8806141486947&#10;...&#10;&#10;엑셀 데이터 붙여넣기 가능"></textarea>
-                </div>
-
-                <div class="bg-themed p-4 rounded-lg flex-shrink-0">
-                    <label for="barcode-input-2" class="block mb-2 text-sm font-medium text-themed">바코드 값 입력 #2 (최대 100개)</label>
-                    <textarea id="barcode-input-2" rows="10" class="w-full input-themed rounded-md p-3 text-sm resize-none" placeholder="8809811720594&#10;8806141486947&#10;...&#10;&#10;엑셀 데이터 붙여넣기 가능"></textarea>
-                </div>
-
-                <div class="bg-themed p-4 rounded-lg flex-shrink-0">
-                    <label for="barcode-input-3" class="block mb-2 text-sm font-medium text-themed">바코드 값 입력 #3 (최대 100개)</label>
-                    <textarea id="barcode-input-3" rows="10" class="w-full input-themed rounded-md p-3 text-sm resize-none" placeholder="8809811720594&#10;8806141486947&#10;...&#10;&#10;엑셀 데이터 붙여넣기 가능"></textarea>
-                </div>
-            </div>
-
-            <!-- 버튼 영역 -->
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <button id="generate-btn" class="w-full cursor-pointer py-2 px-4 rounded-lg border-0 text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center space-x-2">
-                    <span>✅ 수동 생성</span>
+    <!-- MAIN CONTENT Area -->
+    <main id="main-content">
+        <!-- Glass Header -->
+        <header class="glass-header p-4 md:p-6 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button id="sidebar-toggle" class="btn-glass p-2 rounded-lg lg:hidden">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
-                <button id="copy-all-btn" class="w-full cursor-pointer py-2 px-4 rounded-lg border-0 text-sm font-semibold bg-green-600 text-white hover:bg-green-700">
-                    📷 생성된 바코드 전체 복사
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold gradient-text">Bennett 바코드 생성기</h1>
+                    <p class="text-xs text-[var(--text-secondary)] font-mono mt-1 tracking-wider opacity-80">대량 바코드 생성 시스템</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <!-- Reset Button -->
+                <button id="reset-btn" class="btn-modern btn-glass btn-danger" title="모든 입력 및 설정 초기화">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    <span class="hidden md:inline">초기화</span>
+                </button>
+
+                <button id="generate-btn" class="btn-modern btn-primary">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    <span class="hidden md:inline">생성하기</span>
+                </button>
+                <button id="copy-all-btn" class="btn-modern btn-glass hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-500/50">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                    <span class="hidden md:inline">전체 내보내기</span>
                 </button>
             </div>
+        </header>
 
-            <!-- 3칸 출력 영역 -->
-            <div class="three-col-grid">
-                <div class="bg-themed p-4 rounded-lg">
-                    <h3 class="font-bold mb-3 text-themed">📦 생성된 바코드 #1</h3>
-                    <div id="barcode-output-1" class="grid grid-cols-1 gap-3 max-h-[600px] overflow-y-auto">
-                        <div class="text-center py-10 text-muted">대기 중...</div>
+        <!-- Content Grid -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-6">
+            <div class="modern-grid pb-20">
+                <!-- Column 1 -->
+                <div class="flex flex-col gap-4 h-full">
+                    <div class="glass-card flex flex-col flex-1 min-h-[300px]">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_#6366f1]"></div>
+                                <span class="text-sm font-bold text-indigo-400 tracking-wider">입력 소스 A</span>
+                            </div>
+                            <span class="text-[10px] font-mono bg-indigo-500/10 text-indigo-300 px-2 py-1 rounded border border-indigo-500/20">최대 100개</span>
+                        </div>
+                        <textarea id="barcode-input-1" class="flex-1 resize-none !bg-opacity-50 !font-mono text-sm leading-relaxed" placeholder="// 데이터를 여기에 붙여넣으세요..."></textarea>
+                    </div>
+                    
+                    <div class="glass-card flex-1 min-h-[300px] bg-[var(--bg-glass)]">
+                        <div class="flex items-center gap-2 mb-4 sticky top-0 z-10">
+                            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <span class="text-xs font-bold text-[var(--text-secondary)] uppercase">바코드 이미지 A</span>
+                        </div>
+                        <div id="barcode-output-1" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                            <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
+                                <span class="font-mono text-xs">바코드 생성 대기 중...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-themed p-4 rounded-lg">
-                    <h3 class="font-bold mb-3 text-themed">📦 생성된 바코드 #2</h3>
-                    <div id="barcode-output-2" class="grid grid-cols-1 gap-3 max-h-[600px] overflow-y-auto">
-                        <div class="text-center py-10 text-muted">대기 중...</div>
+                <!-- Column 2 -->
+                <div class="flex flex-col gap-4 h-full">
+                    <div class="glass-card flex flex-col flex-1 min-h-[300px]">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></div>
+                                <span class="text-sm font-bold text-pink-400 tracking-wider">입력 소스 B</span>
+                            </div>
+                            <span class="text-[10px] font-mono bg-pink-500/10 text-pink-300 px-2 py-1 rounded border border-pink-500/20">최대 100개</span>
+                        </div>
+                        <textarea id="barcode-input-2" class="flex-1 resize-none !bg-opacity-50 !font-mono text-sm leading-relaxed" placeholder="// 데이터를 여기에 붙여넣으세요..."></textarea>
+                    </div>
+                    
+                    <div class="glass-card flex-1 min-h-[300px] bg-[var(--bg-glass)]">
+                        <div class="flex items-center gap-2 mb-4 sticky top-0 z-10">
+                            <svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <span class="text-xs font-bold text-[var(--text-secondary)] uppercase">바코드 이미지 B</span>
+                        </div>
+                        <div id="barcode-output-2" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                            <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
+                                <span class="font-mono text-xs">바코드 생성 대기 중...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-themed p-4 rounded-lg">
-                    <h3 class="font-bold mb-3 text-themed">📦 생성된 바코드 #3</h3>
-                    <div id="barcode-output-3" class="grid grid-cols-1 gap-3 max-h-[600px] overflow-y-auto">
-                        <div class="text-center py-10 text-muted">대기 중...</div>
+                <!-- Column 3 -->
+                <div class="flex flex-col gap-4 h-full">
+                    <div class="glass-card flex flex-col flex-1 min-h-[300px]">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>
+                                <span class="text-sm font-bold text-emerald-400 tracking-wider">입력 소스 C</span>
+                            </div>
+                            <span class="text-[10px] font-mono bg-emerald-500/10 text-emerald-300 px-2 py-1 rounded border border-emerald-500/20">최대 100개</span>
+                        </div>
+                        <textarea id="barcode-input-3" class="flex-1 resize-none !bg-opacity-50 !font-mono text-sm leading-relaxed" placeholder="// 데이터를 여기에 붙여넣으세요..."></textarea>
+                    </div>
+                    
+                    <div class="glass-card flex-1 min-h-[300px] bg-[var(--bg-glass)]">
+                        <div class="flex items-center gap-2 mb-4 sticky top-0 z-10">
+                            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <span class="text-xs font-bold text-[var(--text-secondary)] uppercase">바코드 이미지 C</span>
+                        </div>
+                        <div id="barcode-output-3" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                            <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
+                                <span class="font-mono text-xs">바코드 생성 대기 중...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -295,13 +615,13 @@
     </main>
 </div>
 
+<!-- Scripts -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Theme Management
         function initTheme() {
             const savedTheme = localStorage.getItem('barcode-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeIcon(savedTheme);
         }
 
         function toggleTheme() {
@@ -309,12 +629,6 @@
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('barcode-theme', newTheme);
-            updateThemeIcon(newTheme);
-        }
-
-        function updateThemeIcon(theme) {
-            const themeIcon = document.getElementById('theme-icon');
-            themeIcon.textContent = theme === 'dark' ? '🌙' : '☀️';
         }
 
         initTheme();
@@ -323,8 +637,7 @@
         const ui = {
             appContainer: document.getElementById('app-container'),
             sidebar: document.getElementById('sidebar'),
-            sidebarToggleDesktop: document.getElementById('sidebar-toggle-desktop'),
-            sidebarToggleMobile: document.getElementById('sidebar-toggle-mobile'),
+            sidebarToggle: document.getElementById('sidebar-toggle'), // mobile only
             sidebarOverlay: document.getElementById('sidebar-overlay'),
             barcodeInputs: [
                 document.getElementById('barcode-input-1'),
@@ -338,6 +651,7 @@
             ],
             generateBtn: document.getElementById('generate-btn'),
             copyAllBtn: document.getElementById('copy-all-btn'),
+            resetBtn: document.getElementById('reset-btn'), // New Reset Button
             formatSelector: document.getElementById('barcode-format'),
             widthSlider: document.getElementById('barcode-width'),
             widthValue: document.getElementById('barcode-width-value'),
@@ -352,9 +666,9 @@
         // Event Listeners
         ui.generateBtn.addEventListener('click', generateBarcodes);
         ui.copyAllBtn.addEventListener('click', copyAllBarcodes);
+        ui.resetBtn.addEventListener('click', resetAll);
         ui.themeToggle.addEventListener('click', toggleTheme);
         
-        // 실시간 자동 생성
         ui.barcodeInputs.forEach(input => {
             input.addEventListener('input', () => {
                 clearTimeout(debounceTimer);
@@ -362,43 +676,119 @@
             });
         });
         
-        // Settings 변경 시 재생성
         ui.formatSelector.addEventListener('change', generateBarcodes);
         ui.widthSlider.addEventListener('input', (e) => {
-            ui.widthValue.textContent = e.target.value;
+            ui.widthValue.textContent = parseFloat(e.target.value).toFixed(1);
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(generateBarcodes, 500);
         });
         ui.heightSlider.addEventListener('input', (e) => {
-            ui.heightValue.textContent = e.target.value;
+            ui.heightValue.textContent = e.target.value + 'px';
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(generateBarcodes, 500);
         });
         ui.displayValueCheckbox.addEventListener('change', generateBarcodes);
 
-        // Sidebar Logic
-        const toggleMobileSidebar = () => {
-            const isOpen = ui.sidebar.classList.toggle('open');
+        // Sidebar Mobile Logic
+        const toggleSidebar = () => {
+            ui.sidebar.classList.toggle('open');
+            const isOpen = ui.sidebar.classList.contains('open');
             ui.sidebarOverlay.classList.toggle('hidden', !isOpen);
-        };
-        const toggleDesktopSidebar = () => {
-            ui.appContainer.classList.toggle('sidebar-collapsed');
+            // Simple animation handling
+            if (isOpen) {
+                 ui.sidebar.style.transform = 'translateX(0)';
+            } else {
+                 ui.sidebar.style.transform = ''; // reset to css default
+            }
         };
 
-        ui.sidebarToggleMobile.addEventListener('click', toggleMobileSidebar);
-        ui.sidebarToggleDesktop.addEventListener('click', toggleDesktopSidebar);
-        ui.sidebarOverlay.addEventListener('click', toggleMobileSidebar);
+        ui.sidebarToggle.addEventListener('click', toggleSidebar);
+        ui.sidebarOverlay.addEventListener('click', toggleSidebar);
         
-        // Barcode Generation Logic
+        // --- SCANNER LOGIC START ---
+        let barcodeBuffer = "";
+        let lastKeyTime = Date.now();
+        const SCAN_TIMEOUT = 100; // Time between keys for it to be considered a scan
+
+        document.addEventListener('keydown', (e) => {
+            // 입력창에 포커스가 있으면 일반 타이핑으로 간주
+            if (['TEXTAREA', 'INPUT', 'SELECT'].includes(document.activeElement.tagName)) return;
+
+            const currentTime = Date.now();
+            
+            // 키 입력 간격이 너무 길면 버퍼 초기화 (사람 손 입력 구분)
+            if (currentTime - lastKeyTime > SCAN_TIMEOUT && barcodeBuffer.length > 0) {
+                barcodeBuffer = "";
+            }
+            lastKeyTime = currentTime;
+
+            if (e.key === 'Enter') {
+                if (barcodeBuffer.length > 0) {
+                    handleScanVerification(barcodeBuffer);
+                    barcodeBuffer = "";
+                }
+                return;
+            }
+
+            // 출력 가능한 문자만 버퍼에 추가 (단일 문자)
+            if (e.key.length === 1) {
+                barcodeBuffer += e.key;
+            }
+        });
+
+        function handleScanVerification(scannedCode) {
+            // 모든 바코드 카드를 검색하여 데이터 값과 일치하는 것 찾기
+            const allCards = document.querySelectorAll('.barcode-card');
+            let found = false;
+
+            allCards.forEach(card => {
+                if (card.dataset.value === scannedCode) {
+                    card.classList.add('scanned');
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    found = true;
+                }
+            });
+
+            if (found) {
+                showToast(`스캔 확인: ${scannedCode}`, 'success');
+            }
+        }
+        // --- SCANNER LOGIC END ---
+
+        // Reset Logic
+        function resetAll() {
+            if (!confirm('모든 입력 데이터와 설정을 초기화하시겠습니까?')) return;
+            
+            // Inputs
+            ui.barcodeInputs.forEach(input => input.value = '');
+            
+            // Outputs
+            ui.barcodeOutputs.forEach(output => {
+                output.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
+                        <span class="font-mono text-xs">입력 대기 중...</span>
+                    </div>`;
+            });
+            
+            // Settings
+            ui.formatSelector.value = 'CODE128';
+            ui.widthSlider.value = 2;
+            ui.widthValue.textContent = '2.0';
+            ui.heightSlider.value = 100;
+            ui.heightValue.textContent = '100px';
+            ui.displayValueCheckbox.checked = true;
+
+            showToast('모든 설정이 초기화되었습니다.', 'success');
+        }
+
+        // Barcode Generation
         function generateBarcodes() {
             ui.generateBtn.disabled = true;
             ui.copyAllBtn.disabled = true;
-            ui.generateBtn.innerHTML = `
-                <svg class="animate-spin -ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>생성 중...</span>`;
+            
+            // Loading state for button
+            const originalBtnHtml = ui.generateBtn.innerHTML;
+            ui.generateBtn.innerHTML = `<span class="animate-pulse">처리 중...</span>`;
 
             setTimeout(() => {
                 try {
@@ -416,51 +806,61 @@
                         let values = [];
                         const lines = input.value.split('\n').filter(line => line.trim() !== '');
                         
+                        // Basic header detection logic same as before
                         if (lines.length > 0) {
                             const headers = lines[0].split('\t').map(h => h.trim().toLowerCase());
                             const barcodeIndex = headers.indexOf('barcode');
-
                             if (barcodeIndex !== -1) {
-                                values = lines.slice(1)
-                                    .map(line => {
-                                        const columns = line.split('\t');
-                                        return columns[barcodeIndex] ? columns[barcodeIndex].trim() : '';
-                                    })
-                                    .filter(barcode => barcode !== '');
+                                values = lines.slice(1).map(l => {
+                                    const c = l.split('\t');
+                                    return c[barcodeIndex] ? c[barcodeIndex].trim() : '';
+                                }).filter(b => b !== '');
                             } else {
                                 values = lines.map(v => v.trim());
                             }
                         }
 
                         if (values.length === 0) {
-                            output.innerHTML = '<div class="text-center py-10 text-muted">값이 없습니다</div>';
+                            output.innerHTML = `
+                            <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
+                                <span class="font-mono text-xs">데이터 대기 중...</span>
+                            </div>`;
                             return;
                         }
 
                         if (values.length > 100) {
-                            output.innerHTML = '<div class="text-center py-10 text-red-500">최대 100개까지만 생성 가능</div>';
+                            output.innerHTML = '<div class="text-center py-10 text-[var(--accent-secondary)] font-bold">⚠️ 제한: 100개</div>';
                             return;
                         }
 
+                        // Generate Items
                         values.forEach((value, index) => {
-                            const card = document.createElement('div');
-                            card.className = 'bg-card p-4 rounded-lg flex flex-col items-center justify-between space-y-3';
+                            const item = document.createElement('div');
+                            item.className = 'barcode-card';
+                            item.dataset.value = value; // 스캐너 감지용 데이터 속성 추가
                             
-                            const svgContainer = document.createElement('div');
-                            svgContainer.className = 'bg-white p-2 rounded w-full flex justify-center';
+                            // SVG Wrapper
+                            const svgWrapper = document.createElement('div');
+                            svgWrapper.className = 'flex justify-center p-2 overflow-hidden';
                             
                             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
                             svg.id = `barcode-${colIndex}-${index}`;
-                            svgContainer.appendChild(svg);
+                            svgWrapper.appendChild(svg);
+                            
+                            // Actions
+                            const actions = document.createElement('div');
+                            actions.className = 'barcode-actions';
                             
                             const copyBtn = document.createElement('button');
-                            copyBtn.textContent = '📷 이미지 복사';
-                            copyBtn.className = 'w-full py-2 px-3 text-xs font-semibold rounded-md bg-gray-600 hover:bg-blue-600 transition-colors text-white';
+                            copyBtn.className = 'action-btn';
+                            copyBtn.textContent = '이미지 복사';
                             copyBtn.onclick = () => copySingleBarcodeImage(svg, value);
-
-                            card.appendChild(svgContainer);
-                            card.appendChild(copyBtn);
-                            output.appendChild(card);
+                            
+                            actions.appendChild(copyBtn);
+                            
+                            item.appendChild(svgWrapper);
+                            item.appendChild(actions);
+                            output.appendChild(item);
 
                             try {
                                 JsBarcode(`#${svg.id}`, value, {
@@ -468,16 +868,12 @@
                                     width: settings.width,
                                     height: settings.height,
                                     displayValue: settings.displayValue,
-                                    fontOptions: "", 
-                                    font: "Inter",
-                                    margin: 10,
-                                    textMargin: 0
+                                    font: "JetBrains Mono", // Use mono font for barcode text
+                                    margin: 0,
+                                    textMargin: 5
                                 });
                             } catch (e) {
-                                svgContainer.innerHTML = `<div class="text-red-400 text-xs p-2 text-center break-all">
-                                    <strong>'${settings.format}' 형식 오류</strong><br>${value}<br>값을 확인해주세요.
-                                </div>`;
-                                console.error(`Barcode generation failed for value: ${value}`, e);
+                                svgWrapper.innerHTML = `<div class="text-pink-500 text-xs font-mono p-2 text-center">형식 오류<br>${value}</div>`;
                             }
                         });
                     });
@@ -485,20 +881,19 @@
                 } finally {
                     ui.generateBtn.disabled = false;
                     ui.copyAllBtn.disabled = false;
-                    ui.generateBtn.innerHTML = `<span>✅ 수동 생성</span>`;
+                    ui.generateBtn.innerHTML = originalBtnHtml;
                 }
-            }, 0);
+            }, 100); // Slight delay for UI responsiveness
         }
         
-        // Image Copy Logic
         async function copySingleBarcodeImage(svgElement, value) {
             try {
                 const pngBlob = await svgToPngBlob(svgElement);
                 await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })]);
-                showModal(`'${value}' 바코드가 복사되었습니다.`);
+                showToast(`'${value}' 바코드 복사 완료!`, 'success');
             } catch (err) {
-                console.error('클립보드 복사 실패:', err);
-                showModal('클립보드 복사에 실패했습니다.', 'error');
+                console.error(err);
+                showToast('복사 실패', 'error');
             }
         }
         
@@ -510,15 +905,15 @@
             });
 
             if (allSvgs.length === 0) {
-                showModal('복사할 바코드가 없습니다.', 'error');
+                showToast('내보낼 바코드가 없습니다', 'error');
                 return;
             }
 
-            showModal('전체 바코드 이미지 생성 중...', 'success', 2000);
+            showToast('전체 이미지 생성 중...', 'success');
 
             try {
                 const scale = 2;
-                const padding = 10 * scale;
+                const padding = 20;
                 
                 const barcodeImages = [];
                 let maxWidth = 0;
@@ -528,7 +923,6 @@
                     const rect = svg.getBoundingClientRect();
                     const pngBlob = await svgToPngBlob(svg, scale);
                     const bmp = await createImageBitmap(pngBlob);
-                    
                     const width = rect.width * scale;
                     const height = rect.height * scale;
                     
@@ -540,28 +934,26 @@
                 const canvas = document.createElement('canvas');
                 canvas.width = maxWidth + (padding * 2);
                 canvas.height = totalHeight;
-                
                 const ctx = canvas.getContext('2d');
                 ctx.fillStyle = 'white';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                 let currentY = padding;
                 for (const { bmp, height } of barcodeImages) {
-                    ctx.drawImage(bmp, padding, currentY);
+                    ctx.drawImage(bmp, (canvas.width - maxWidth)/2 + (maxWidth - bmp.width)/2, currentY); // Center align
                     currentY += height + padding;
                 }
 
                 canvas.toBlob(async (finalBlob) => {
                     await navigator.clipboard.write([new ClipboardItem({ 'image/png': finalBlob })]);
-                    showModal(`총 ${allSvgs.length}개의 바코드가 복사되었습니다.`);
+                    showToast(`${allSvgs.length}개 바코드 복사 완료!`, 'success');
                 }, 'image/png');
             } catch (err) {
-                console.error('전체 복사 실패:', err);
-                showModal('전체 바코드 복사 중 오류가 발생했습니다.', 'error');
+                console.error(err);
+                showToast('전체 내보내기 실패', 'error');
             }
         }
 
-        // Utility Functions
         function svgToPngBlob(svgElement, scale = 2) {
             return new Promise((resolve, reject) => {
                 const svgString = new XMLSerializer().serializeToString(svgElement);
@@ -574,45 +966,37 @@
                     canvas.width = img.width * scale;
                     canvas.height = img.height * scale;
                     const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = 'white';
+                    ctx.fillStyle = 'white'; // Barcode bg
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     URL.revokeObjectURL(url);
                     canvas.toBlob(resolve, 'image/png');
                 };
-                img.onerror = (err) => {
-                    URL.revokeObjectURL(url);
-                    reject(err);
-                };
+                img.onerror = reject;
             });
         }
         
-        function showModal(message, type = 'success', duration = 3000) {
-            const modal = document.createElement('div');
-            const bgColor = type === 'success' ? 'bg-blue-500' : 'bg-red-400';
-            modal.className = `fixed top-5 right-5 ${bgColor} text-white py-2 px-4 rounded-lg shadow-lg z-50 animate-fade-in-out`;
-            modal.textContent = message;
-            const styleId = 'modal-animation-style';
-            if (!document.getElementById(styleId)) {
-                const style = document.createElement('style');
-                style.id = styleId;
-                style.textContent = `
-                    @keyframes fade-in-out {
-                        0% { opacity: 0; transform: translateY(-20px); }
-                        10% { opacity: 1; transform: translateY(0); }
-                        90% { opacity: 1; transform: translateY(0); }
-                        100% { opacity: 0; transform: translateY(-20px); }
-                    }
-                    .animate-fade-in-out {
-                        animation: fade-in-out ${duration / 1000}s ease-in-out forwards;
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-            document.body.appendChild(modal);
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            const colorClass = type === 'success' ? 'border-emerald-500 text-emerald-400' : 'border-pink-500 text-pink-400';
+            
+            toast.className = `fixed bottom-8 right-8 bg-[var(--bg-glass)] backdrop-blur-md border ${colorClass} py-3 px-6 rounded-lg shadow-2xl z-50 font-mono text-sm font-bold flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-300`;
+            toast.innerHTML = `
+                <span class="w-2 h-2 rounded-full ${type === 'success' ? 'bg-emerald-500' : 'bg-pink-500'}"></span>
+                ${message}
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Animation
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            });
+            
             setTimeout(() => {
-                modal.remove();
-            }, duration);
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
     });
 </script>
