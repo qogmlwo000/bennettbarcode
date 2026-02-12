@@ -4,15 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bennett 바코드 생성기 - 2.0 Ver</title>
-    
+    <title>Bennett 바코드 스튜디오 · 최신 UI</title>
+
     <link rel="icon" href="https://raw.githubusercontent.com/qogmlwo000/gwj2pickpackhtp/main/Bennett.ico" type="image/x-icon">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <!-- 폰트 변경: Noto Sans KR을 메인으로 설정 -->
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    
+
     <style>
         /* --- Modern Design System --- */
         :root {
@@ -20,26 +20,26 @@
             --font-main: 'Noto Sans KR', sans-serif;
             --font-mono: 'Noto Sans KR', monospace;
         }
-        
+
         /* Modern Dark Theme (Default) */
         :root {
             --bg-body: #020617;
             --bg-glass: rgba(15, 23, 42, 0.7);
             --bg-card: rgba(30, 41, 59, 0.4);
             --bg-input: rgba(2, 6, 23, 0.5);
-            
+
             --border-glass: rgba(255, 255, 255, 0.08);
             --border-highlight: rgba(255, 255, 255, 0.15);
-            
+
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --text-tertiary: #64748b;
-            
+
             --accent-primary: #6366f1; /* Indigo */
             --accent-glow: rgba(99, 102, 241, 0.5);
             --accent-secondary: #ec4899; /* Pink */
             --success: #10b981;
-            
+
             --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
 
@@ -49,20 +49,20 @@
             --bg-glass: rgba(255, 255, 255, 0.85);
             --bg-card: rgba(255, 255, 255, 0.7);
             --bg-input: rgba(248, 250, 252, 0.8);
-            
+
             --border-glass: rgba(0, 0, 0, 0.06);
             --border-highlight: rgba(0, 0, 0, 0.1);
-            
+
             --text-primary: #0f172a;
             --text-secondary: #475569;
             --text-tertiary: #94a3b8;
-            
+
             --accent-primary: #4f46e5;
             --accent-glow: rgba(79, 70, 229, 0.3);
             --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
         }
 
-        body { 
+        body {
             font-family: var(--font-main);
             background-color: var(--bg-body);
             color: var(--text-primary);
@@ -73,7 +73,7 @@
         .ambient-bg {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: 
+            background:
                 radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.08), transparent 25%),
                 radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.08), transparent 25%);
             z-index: -1;
@@ -88,7 +88,7 @@
 
         /* Layout */
         .app-container { display: flex; height: 100vh; }
-        
+
         #sidebar {
             width: 340px;
             height: 100%;
@@ -102,8 +102,8 @@
             display: flex; flex-direction: column;
             box-shadow: var(--shadow-glass);
         }
-        
-        #main-content { 
+
+        #main-content {
             flex: 1;
             width: 100%;
             height: 100vh;
@@ -160,7 +160,7 @@
         }
         /* Select 폰트는 일반 폰트 사용 */
         select { font-family: var(--font-main); }
-        
+
         label {
             color: var(--text-secondary);
             font-weight: 600;
@@ -213,7 +213,7 @@
             word-break: keep-all; /* 한글 줄바꿈 방지 */
             white-space: nowrap;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             color: white;
@@ -224,7 +224,7 @@
             box-shadow: 0 8px 25px var(--accent-glow);
             filter: brightness(1.1);
         }
-        
+
         .btn-glass {
             background: rgba(255,255,255,0.05);
             border: 1px solid var(--border-glass);
@@ -257,7 +257,7 @@
             font-weight: 800;
             letter-spacing: -0.02em;
         }
-        
+
         /* Barcode Item */
         .barcode-card {
             background: white; /* Barcodes need white bg */
@@ -276,7 +276,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
             z-index: 10;
         }
-        
+
         /* Scanned State Style */
         .barcode-card.scanned {
             border-color: var(--success);
@@ -286,7 +286,7 @@
             z-index: 20;
         }
         .barcode-card.scanned::after {
-            content: '✓ SCANNED';
+            content: '✓ 스캔 완료';
             position: absolute;
             top: -10px; right: 10px;
             background: var(--success);
@@ -303,7 +303,7 @@
             from { transform: scale(0); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
-        
+
         .barcode-actions {
             margin-top: 8px;
             display: flex;
@@ -386,7 +386,7 @@
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
         }
-        
+
         .section-title {
             font-size: 0.75rem;
             text-transform: uppercase;
@@ -405,6 +405,32 @@
             background: var(--border-glass);
         }
 
+        .hero-panel {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.16), rgba(236, 72, 153, 0.08));
+            border-color: rgba(129, 140, 248, 0.35);
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            border: 1px solid var(--border-highlight);
+            background: rgba(15, 23, 42, 0.35);
+        }
+
+        .status-chip::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #22d3ee;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
+        }
+
         /* Glass Header */
         .glass-header {
             background: rgba(var(--bg-body), 0.6);
@@ -421,7 +447,7 @@
 <div class="ambient-bg"></div>
 
 <div id="app-container" class="app-container">
-    
+
     <!-- MODERN SIDEBAR -->
     <aside id="sidebar">
         <div class="p-6 border-b border-[var(--border-glass)] flex items-center justify-between">
@@ -431,7 +457,7 @@
             </div>
             <div class="switch-toggle" id="theme-toggle" title="테마 전환"></div>
         </div>
-        
+
         <div class="flex-1 overflow-y-auto p-6 space-y-8">
             <!-- Format Section -->
             <div>
@@ -467,7 +493,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Options Section -->
             <div>
                 <div class="section-title">옵션</div>
@@ -490,12 +516,12 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="p-4 border-t border-[var(--border-glass)] text-center text-xs text-[var(--text-tertiary)]">
-            Bennett Barcode v2.0
+            Bennett 바코드 스튜디오 v3.0
         </div>
     </aside>
-    
+
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
 
     <!-- MAIN CONTENT Area -->
@@ -508,10 +534,10 @@
                 </button>
                 <div>
                     <h1 class="text-2xl md:text-3xl font-bold gradient-text">Bennett 바코드 생성기</h1>
-                    <p class="text-xs text-[var(--text-secondary)] font-mono mt-1 tracking-wider opacity-80">대량 바코드 생성 시스템</p>
+                    <p class="text-xs text-[var(--text-secondary)] font-mono mt-1 tracking-wider opacity-80">실시간 대량 바코드 생성 · 스캔 검증</p>
                 </div>
             </div>
-            
+
             <div class="flex gap-3">
                 <!-- Reset Button -->
                 <button id="reset-btn" class="btn-modern btn-glass btn-danger" title="모든 입력 및 설정 초기화">
@@ -521,17 +547,30 @@
 
                 <button id="generate-btn" class="btn-modern btn-primary">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                    <span class="hidden md:inline">생성하기</span>
+                    <span class="hidden md:inline">바코드 생성</span>
                 </button>
                 <button id="copy-all-btn" class="btn-modern btn-glass hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-500/50">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
-                    <span class="hidden md:inline">전체 내보내기</span>
+                    <span class="hidden md:inline">전체 이미지 복사</span>
                 </button>
             </div>
         </header>
 
         <!-- Content Grid -->
         <div class="flex-1 overflow-y-auto p-4 md:p-6">
+            <section class="glass-card hero-panel mb-4 md:mb-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <p class="text-xs md:text-sm text-[var(--text-secondary)]">업무용 바코드 작업을 더 빠르게</p>
+                        <h2 class="text-xl md:text-2xl font-bold mt-1">한 번에 최대 300개 생성 · 즉시 스캔 검증</h2>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="status-chip">실시간 미리보기</span>
+                        <span class="status-chip">클립보드 이미지 복사</span>
+                        <span class="status-chip">한글 UI 최적화</span>
+                    </div>
+                </div>
+            </section>
             <div class="modern-grid pb-20">
                 <!-- Column 1 -->
                 <div class="flex flex-col gap-4 h-full">
@@ -539,17 +578,19 @@
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex items-center gap-2">
                                 <div class="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_#6366f1]"></div>
-                                <span class="text-sm font-bold text-indigo-400 tracking-wider">입력 소스 A</span>
+                                <span class="text-sm font-bold text-indigo-400 tracking-wider">입력 패널 1</span>
                             </div>
                             <span class="text-[10px] font-mono bg-indigo-500/10 text-indigo-300 px-2 py-1 rounded border border-indigo-500/20">최대 100개</span>
                         </div>
-                        <textarea id="barcode-input-1" class="flex-1 resize-none !bg-opacity-50 !font-mono text-sm leading-relaxed" placeholder="// 데이터를 여기에 붙여넣으세요..."></textarea>
+                        <textarea id="barcode-input-1" class="flex-1 resize-none !bg-opacity-50 !font-mono text-sm leading-relaxed" placeholder="예) 8801234567890
+8809876543210
+또는 TSV의 barcode/바코드 열"></textarea>
                     </div>
-                    
+
                     <div class="glass-card flex-1 min-h-[300px] bg-[var(--bg-glass)]">
                         <div class="flex items-center gap-2 mb-4 sticky top-0 z-10">
                             <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <span class="text-xs font-bold text-[var(--text-secondary)] uppercase">바코드 이미지 A</span>
+                            <span class="text-xs font-bold text-[var(--text-secondary)] uppercase">생성 결과 1</span>
                         </div>
                         <div id="barcode-output-1" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                             <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
@@ -565,17 +606,19 @@
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex items-center gap-2">
                                 <div class="w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></div>
-                                <span class="text-sm font-bold text-pink-400 tracking-wider">입력 소스 B</span>
+                                <span class="text-sm font-bold text-pink-400 tracking-wider">입력 패널 2</span>
                             </div>
                             <span class="text-[10px] font-mono bg-pink-500/10 text-pink-300 px-2 py-1 rounded border border-pink-500/20">최대 100개</span>
                         </div>
-                        <textarea id="barcode-input-2" class="flex-1 resize-none !bg-opacity-50 !font-mono text-sm leading-relaxed" placeholder="// 데이터를 여기에 붙여넣으세요..."></textarea>
+                        <textarea id="barcode-input-2" class="flex-1 resize-none !bg-opacity-50 !font-mono text-sm leading-relaxed" placeholder="예) 8801234567890
+8809876543210
+또는 TSV의 barcode/바코드 열"></textarea>
                     </div>
-                    
+
                     <div class="glass-card flex-1 min-h-[300px] bg-[var(--bg-glass)]">
                         <div class="flex items-center gap-2 mb-4 sticky top-0 z-10">
                             <svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <span class="text-xs font-bold text-[var(--text-secondary)] uppercase">바코드 이미지 B</span>
+                            <span class="text-xs font-bold text-[var(--text-secondary)] uppercase">생성 결과 2</span>
                         </div>
                         <div id="barcode-output-2" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                             <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
@@ -591,17 +634,19 @@
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex items-center gap-2">
                                 <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>
-                                <span class="text-sm font-bold text-emerald-400 tracking-wider">입력 소스 C</span>
+                                <span class="text-sm font-bold text-emerald-400 tracking-wider">입력 패널 3</span>
                             </div>
                             <span class="text-[10px] font-mono bg-emerald-500/10 text-emerald-300 px-2 py-1 rounded border border-emerald-500/20">최대 100개</span>
                         </div>
-                        <textarea id="barcode-input-3" class="flex-1 resize-none !bg-opacity-50 !font-mono text-sm leading-relaxed" placeholder="// 데이터를 여기에 붙여넣으세요..."></textarea>
+                        <textarea id="barcode-input-3" class="flex-1 resize-none !bg-opacity-50 !font-mono text-sm leading-relaxed" placeholder="예) 8801234567890
+8809876543210
+또는 TSV의 barcode/바코드 열"></textarea>
                     </div>
-                    
+
                     <div class="glass-card flex-1 min-h-[300px] bg-[var(--bg-glass)]">
                         <div class="flex items-center gap-2 mb-4 sticky top-0 z-10">
                             <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <span class="text-xs font-bold text-[var(--text-secondary)] uppercase">바코드 이미지 C</span>
+                            <span class="text-xs font-bold text-[var(--text-secondary)] uppercase">생성 결과 3</span>
                         </div>
                         <div id="barcode-output-3" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                             <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
@@ -668,14 +713,14 @@
         ui.copyAllBtn.addEventListener('click', copyAllBarcodes);
         ui.resetBtn.addEventListener('click', resetAll);
         ui.themeToggle.addEventListener('click', toggleTheme);
-        
+
         ui.barcodeInputs.forEach(input => {
             input.addEventListener('input', () => {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(generateBarcodes, 500);
             });
         });
-        
+
         ui.formatSelector.addEventListener('change', generateBarcodes);
         ui.widthSlider.addEventListener('input', (e) => {
             ui.widthValue.textContent = parseFloat(e.target.value).toFixed(1);
@@ -704,7 +749,7 @@
 
         ui.sidebarToggle.addEventListener('click', toggleSidebar);
         ui.sidebarOverlay.addEventListener('click', toggleSidebar);
-        
+
         // --- SCANNER LOGIC START ---
         let barcodeBuffer = "";
         let lastKeyTime = Date.now();
@@ -715,7 +760,7 @@
             if (['TEXTAREA', 'INPUT', 'SELECT'].includes(document.activeElement.tagName)) return;
 
             const currentTime = Date.now();
-            
+
             // 키 입력 간격이 너무 길면 버퍼 초기화 (사람 손 입력 구분)
             if (currentTime - lastKeyTime > SCAN_TIMEOUT && barcodeBuffer.length > 0) {
                 barcodeBuffer = "";
@@ -758,10 +803,10 @@
         // Reset Logic
         function resetAll() {
             if (!confirm('모든 입력 데이터와 설정을 초기화하시겠습니까?')) return;
-            
+
             // Inputs
             ui.barcodeInputs.forEach(input => input.value = '');
-            
+
             // Outputs
             ui.barcodeOutputs.forEach(output => {
                 output.innerHTML = `
@@ -769,7 +814,7 @@
                         <span class="font-mono text-xs">입력 대기 중...</span>
                     </div>`;
             });
-            
+
             // Settings
             ui.formatSelector.value = 'CODE128';
             ui.widthSlider.value = 2;
@@ -785,7 +830,7 @@
         function generateBarcodes() {
             ui.generateBtn.disabled = true;
             ui.copyAllBtn.disabled = true;
-            
+
             // Loading state for button
             const originalBtnHtml = ui.generateBtn.innerHTML;
             ui.generateBtn.innerHTML = `<span class="animate-pulse">처리 중...</span>`;
@@ -805,11 +850,11 @@
 
                         let values = [];
                         const lines = input.value.split('\n').filter(line => line.trim() !== '');
-                        
+
                         // Basic header detection logic same as before
                         if (lines.length > 0) {
                             const headers = lines[0].split('\t').map(h => h.trim().toLowerCase());
-                            const barcodeIndex = headers.indexOf('barcode');
+                            const barcodeIndex = headers.findIndex(header => ['barcode', '바코드', 'barcode_no', 'code'].includes(header));
                             if (barcodeIndex !== -1) {
                                 values = lines.slice(1).map(l => {
                                     const c = l.split('\t');
@@ -838,26 +883,26 @@
                             const item = document.createElement('div');
                             item.className = 'barcode-card';
                             item.dataset.value = value; // 스캐너 감지용 데이터 속성 추가
-                            
+
                             // SVG Wrapper
                             const svgWrapper = document.createElement('div');
                             svgWrapper.className = 'flex justify-center p-2 overflow-hidden';
-                            
+
                             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
                             svg.id = `barcode-${colIndex}-${index}`;
                             svgWrapper.appendChild(svg);
-                            
+
                             // Actions
                             const actions = document.createElement('div');
                             actions.className = 'barcode-actions';
-                            
+
                             const copyBtn = document.createElement('button');
                             copyBtn.className = 'action-btn';
                             copyBtn.textContent = '이미지 복사';
                             copyBtn.onclick = () => copySingleBarcodeImage(svg, value);
-                            
+
                             actions.appendChild(copyBtn);
-                            
+
                             item.appendChild(svgWrapper);
                             item.appendChild(actions);
                             output.appendChild(item);
@@ -885,7 +930,7 @@
                 }
             }, 100); // Slight delay for UI responsiveness
         }
-        
+
         async function copySingleBarcodeImage(svgElement, value) {
             try {
                 const pngBlob = await svgToPngBlob(svgElement);
@@ -896,7 +941,7 @@
                 showToast('복사 실패', 'error');
             }
         }
-        
+
         async function copyAllBarcodes() {
             const allSvgs = [];
             ui.barcodeOutputs.forEach(output => {
@@ -914,23 +959,23 @@
             try {
                 const scale = 2;
                 const padding = 20;
-                
+
                 const barcodeImages = [];
                 let maxWidth = 0;
                 let totalHeight = padding;
-                
+
                 for (const svg of allSvgs) {
                     const rect = svg.getBoundingClientRect();
                     const pngBlob = await svgToPngBlob(svg, scale);
                     const bmp = await createImageBitmap(pngBlob);
                     const width = rect.width * scale;
                     const height = rect.height * scale;
-                    
+
                     barcodeImages.push({ bmp, width, height });
                     maxWidth = Math.max(maxWidth, width);
                     totalHeight += height + padding;
                 }
-                
+
                 const canvas = document.createElement('canvas');
                 canvas.width = maxWidth + (padding * 2);
                 canvas.height = totalHeight;
@@ -950,7 +995,7 @@
                 }, 'image/png');
             } catch (err) {
                 console.error(err);
-                showToast('전체 내보내기 실패', 'error');
+                showToast('전체 이미지 복사 실패', 'error');
             }
         }
 
@@ -975,24 +1020,24 @@
                 img.onerror = reject;
             });
         }
-        
+
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             const colorClass = type === 'success' ? 'border-emerald-500 text-emerald-400' : 'border-pink-500 text-pink-400';
-            
+
             toast.className = `fixed bottom-8 right-8 bg-[var(--bg-glass)] backdrop-blur-md border ${colorClass} py-3 px-6 rounded-lg shadow-2xl z-50 font-mono text-sm font-bold flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-300`;
             toast.innerHTML = `
                 <span class="w-2 h-2 rounded-full ${type === 'success' ? 'bg-emerald-500' : 'bg-pink-500'}"></span>
                 ${message}
             `;
-            
+
             document.body.appendChild(toast);
-            
+
             // Animation
             requestAnimationFrame(() => {
                 toast.classList.remove('translate-y-10', 'opacity-0');
             });
-            
+
             setTimeout(() => {
                 toast.classList.add('translate-y-10', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
