@@ -657,6 +657,26 @@ textarea::placeholder { color: var(--faint); }
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
   flex: none;
 }
+/* 키오스크(자동 인쇄) 모드 표시 */
+.kiosk-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-left: 10px;
+  padding: 2px 7px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: var(--r);
+  font-family: var(--f-mono);
+  font-size: 9.5px; font-weight: 600;
+  letter-spacing: .08em;
+  vertical-align: 1px;
+}
+.kiosk-badge::before {
+  content: ''; width: 5px; height: 5px; border-radius: 50%;
+  background: currentColor;
+  animation: kioskPulse 1.6s ease-in-out infinite;
+}
+@keyframes kioskPulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+
 .stage-info { font-family: var(--f-mono); font-size: 11px; color: var(--dim); }
 .stage-info b { color: var(--accent); font-weight: 600; }
 
@@ -983,7 +1003,7 @@ textarea::placeholder { color: var(--faint); }
       <div class="topbar">
         <div>
           <h1>바코드 프린트 생성기 <span style="color:var(--faint);font-weight:400;font-size:14px;">Print</span></h1>
-          <div class="sub">LABEL PRINT · 원하는 항목만 입력</div>
+          <div class="sub" id="print-sub">LABEL PRINT · 원하는 항목만 입력</div>
         </div>
         <div class="topbar-actions">
           <button class="btn" id="p-clear">
@@ -1727,6 +1747,19 @@ textarea::placeholder { color: var(--faint); }
     showval: $('#p-showval')
   };
 
+  /* 자동인쇄 실행.bat 으로 열면 URL 에 kiosk=1 이 붙는다.
+     그 창에서는 인쇄 대화상자 없이 기본 프린터로 바로 나가므로,
+     지금 어느 모드인지 화면에 못박아 둔다. */
+  const KIOSK = /[?&]kiosk=1/.test(location.search);
+  if (KIOSK) {
+    const badge = document.createElement('span');
+    badge.className = 'kiosk-badge';
+    badge.textContent = '자동 인쇄 모드';
+    badge.title = '출력을 누르면 확인 없이 기본 프린터로 바로 인쇄됩니다';
+    $('#print-sub').appendChild(badge);
+    $('#p-print').querySelector('span').textContent = '즉시 출력';
+  }
+
   // 프린트 화면의 접두어 토글은 대량 생성기와 따로 기억한다
   const pPrefix = $('#p-prefix-toggle');
   pPrefix.checked = store.get(LS.prefixP, true);
@@ -2054,7 +2087,10 @@ textarea::placeholder { color: var(--faint); }
       rootEl.appendChild(page);
     }
 
-    // 폰트·바코드 렌더가 끝난 뒤 인쇄 대화상자를 띄운다
+    // 키오스크 인쇄 모드에서는 화면이 그대로여서 눌린 줄 모른다
+    toast(spec.qty + '장 인쇄 요청', 'ok');
+
+    // 폰트·바코드 렌더가 끝난 뒤 인쇄를 건다
     setTimeout(() => window.print(), 120);
   });
 
