@@ -2,1077 +2,2073 @@
 <html lang="ko" data-theme="dark">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bennett 바코드 생성기 - 2.0 Ver</title>
-    
-    <link rel="icon" type="image/x-icon" href="Bennett.ico" />
-	<link rel="shortcut icon" type="image/x-icon" href="Bennett.ico" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bennett 바코드 생성기 — 3.0</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <!-- 폰트 변경: Noto Sans KR을 메인으로 설정 -->
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    
-    <style>
-        /* --- Modern Design System --- */
-        :root {
-            --transition-speed: 0.3s;
-            --font-main: 'Noto Sans KR', sans-serif;
-            --font-mono: 'Noto Sans KR', monospace;
-        }
-        
-        /* Modern Dark Theme (Default) */
-        :root {
-            --bg-body: #020617;
-            --bg-glass: rgba(15, 23, 42, 0.7);
-            --bg-card: rgba(30, 41, 59, 0.4);
-            --bg-input: rgba(2, 6, 23, 0.5);
-            
-            --border-glass: rgba(255, 255, 255, 0.08);
-            --border-highlight: rgba(255, 255, 255, 0.15);
-            
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-tertiary: #64748b;
-            
-            --accent-primary: #6366f1; /* Indigo */
-            --accent-glow: rgba(99, 102, 241, 0.2);
-            --accent-secondary: #818cf8; /* Muted Indigo (was pink) */
-            --success: #10b981;
-            
-            --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
+<link rel="icon" type="image/x-icon" href="Bennett.ico" />
+<link rel="shortcut icon" type="image/x-icon" href="Bennett.ico" />
 
-        /* Light Theme Override */
-        [data-theme="light"] {
-            --bg-body: #ffffff;
-            --bg-glass: rgba(255, 255, 255, 0.9);
-            --bg-card: rgba(241, 245, 249, 0.6);
-            --bg-input: #f8fafc;
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 
-            --border-glass: rgba(15, 23, 42, 0.08);
-            --border-highlight: #2563eb;
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --text-tertiary: #64748b;
+<style>
+/* ============================================================
+   BENNETT BARCODE 3.0 — "Industrial Instrument Panel"
+   차콜 + 안전 주황. 각진 형태. 헤어라인 격자.
+   ============================================================ */
 
-            --accent-primary: #2563eb;     /* blue-600 */
-            --accent-secondary: #3b82f6;   /* blue-500 (no pink) */
-            --accent-glow: rgba(37, 99, 235, 0.15);
-            --shadow-glass: 0 4px 16px rgba(15, 23, 42, 0.06);
-        }
+*, *::before, *::after { box-sizing: border-box; }
 
-        body { 
-            font-family: var(--font-main);
-            background-color: var(--bg-body);
-            color: var(--text-primary);
-            overflow: hidden; /* App container handles scroll */
-        }
+:root {
+  --rail-w: 236px;
+  --f-sans: 'IBM Plex Sans KR', system-ui, -apple-system, sans-serif;
+  --f-mono: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --r: 2px;
+  --card-w: 380px;
+}
 
-        /* Ambient Background Mesh */
-        .ambient-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background:
-                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.03), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.03), transparent 25%);
-            z-index: -1;
-            pointer-events: none;
-        }
+[data-theme="dark"] {
+  --bg:          #0E0F12;
+  --panel:       #15161A;
+  --panel-2:     #1B1D22;
+  --raised:      #23262C;
+  --line:        rgba(255,255,255,.09);
+  --line-2:      rgba(255,255,255,.16);
+  --text:        #E9E7E2;
+  --dim:         #9A978F;
+  --faint:       #67655F;
+  --accent:      #FF5A1F;
+  --accent-ink:  #FFFFFF;
+  --accent-soft: rgba(255,90,31,.13);
+  --accent-line: rgba(255,90,31,.42);
+  --ok:          #35D07F;
+  --ok-soft:     rgba(53,208,127,.14);
+  --warn:        #FFB020;
+  --bad:         #FF4D3D;
+  --bad-soft:    rgba(255,77,61,.12);
+  --paper:       #FBFAF7;
+  --paper-ink:   #16150F;
+  --grain:       .035;
+  --shadow:      0 1px 0 rgba(255,255,255,.03), 0 12px 28px -18px rgba(0,0,0,.9);
+}
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--text-tertiary); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+[data-theme="light"] {
+  --bg:          #E6E3DC;
+  --panel:       #F2F0EA;
+  --panel-2:     #FAF8F4;
+  --raised:      #FFFFFF;
+  --line:        rgba(24,21,16,.14);
+  --line-2:      rgba(24,21,16,.26);
+  --text:        #16150F;
+  --dim:         #5B564C;
+  --faint:       #8A857A;
+  --accent:      #D8430C;
+  --accent-ink:  #FFFFFF;
+  --accent-soft: rgba(216,67,12,.10);
+  --accent-line: rgba(216,67,12,.40);
+  --ok:          #16794A;
+  --ok-soft:     rgba(22,121,74,.12);
+  --warn:        #A96A00;
+  --bad:         #C0341F;
+  --bad-soft:    rgba(192,52,31,.10);
+  --paper:       #FFFFFF;
+  --paper-ink:   #16150F;
+  --grain:       .022;
+  --shadow:      0 1px 2px rgba(24,21,16,.07), 0 10px 24px -20px rgba(24,21,16,.5);
+}
 
-        /* Layout */
-        .app-container { display: flex; height: 100vh; }
-        
-        #sidebar {
-            width: 340px;
-            height: 100%;
-            position: fixed; top: 0; left: 0; z-index: 50;
-            background: var(--bg-glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-right: 1px solid var(--border-glass);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            transform: translateX(-100%);
-            display: flex; flex-direction: column;
-            box-shadow: var(--shadow-glass);
-        }
-        
-        #main-content { 
-            flex: 1;
-            width: 100%;
-            height: 100vh;
-            display: flex; flex-direction: column;
-            transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            background: transparent;
-        }
+html, body { height: 100%; }
 
-        @media (min-width: 1024px) {
-            #sidebar { position: static; transform: translateX(0); }
-            .app-container.sidebar-collapsed #sidebar { margin-left: -340px; }
-            #sidebar-toggle-desktop { display: flex; }
-            #sidebar-toggle-mobile { display: none; }
-        }
-        @media (max-width: 1023px) {
-            #sidebar.open { transform: translateX(0); }
-            #sidebar-toggle-desktop { display: none; }
-            #sidebar-toggle-mobile { display: flex; }
-        }
+body {
+  margin: 0;
+  font-family: var(--f-sans);
+  font-weight: 400;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
 
-        /* Components: Glass Card */
-        .glass-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--border-glass);
-            border-radius: 16px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-        .glass-card:hover {
-            border-color: var(--border-highlight);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border-highlight);
-            transform: translateY(-2px);
-        }
+/* 그레인 텍스처 — 평면적인 색면에 종이 같은 밀도를 준다 */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 9999;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
 
-        /* Inputs */
-        textarea, input[type="text"], input[type="number"], select {
-            background: var(--bg-input);
-            border: 1px solid var(--border-glass);
-            color: var(--text-primary);
-            border-radius: 12px;
-            padding: 12px;
-            font-family: var(--font-mono); /* 데이터 입력부는 모노스페이스 유지 */
-            font-size: 0.875rem;
-            width: 100%;
-            transition: all 0.2s ease;
-        }
-        textarea:focus, input:focus, select:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-            background: var(--bg-card);
-        }
-        /* Select 폰트는 일반 폰트 사용 */
-        select { font-family: var(--font-main); }
-        
-        label {
-            color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
+::selection { background: var(--accent); color: var(--accent-ink); }
 
-        /* Range Slider */
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-            margin: 10px 0;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 20px; width: 20px;
-            border-radius: 50%;
-            background: var(--accent-primary);
-            cursor: pointer;
-            margin-top: -8px;
-            box-shadow: 0 0 10px var(--accent-glow);
-            border: 2px solid var(--bg-body);
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 4px;
-            cursor: pointer;
-            background: var(--border-glass);
-            border-radius: 2px;
-        }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line-2); border: 3px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--faint); background-clip: content-box; }
 
-        /* Buttons */
-        .btn-modern {
-            position: relative;
-            overflow: hidden;
-            border: none;
-            border-radius: 12px;
-            padding: 12px 24px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            word-break: keep-all; /* 한글 줄바꿈 방지 */
-            white-space: nowrap;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            color: white;
-            box-shadow: 0 4px 15px var(--accent-glow);
-        }
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px var(--accent-glow);
-            filter: brightness(1.1);
-        }
-        
-        .btn-glass {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border-glass);
-            color: var(--text-primary);
-        }
-        .btn-glass:hover {
-            background: rgba(255,255,255,0.1);
-            border-color: var(--text-tertiary);
-        }
+/* ---------- 타이포 유틸 ---------- */
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.tag {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
 
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #f87171;
-        }
-        .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.2);
-            border-color: #f87171;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
-        }
+/* ============================================================
+   레이아웃
+   ============================================================ */
+.app { display: flex; height: 100vh; }
 
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+/* ---------- 좌측 카테고리 레일 ---------- */
+.rail {
+  width: var(--rail-w);
+  flex: none;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  display: flex; flex-direction: column;
+  z-index: 30;
+}
 
-        /* Typography & Header */
-        .gradient-text {
-            background: linear-gradient(to right, #818cf8, #e879f9, #2dd4bf);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
-        
-        /* Barcode Item */
-        .barcode-card {
-            background: white; /* Barcodes need white bg */
-            border-radius: 12px;
-            padding: 12px;
-            position: relative;
-            transition: all 0.3s ease;
-            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            border: 2px solid transparent;
-        }
-        [data-theme="dark"] .barcode-card {
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.1);
-        }
-        .barcode-card:hover {
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            z-index: 10;
-        }
-        
-        /* Scanned State Style */
-        .barcode-card.scanned {
-            border-color: var(--success);
-            background: #f0fdf4; /* Very light green */
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
-            transform: scale(1.02);
-            z-index: 20;
-        }
-        .barcode-card.scanned::after {
-            content: '✓ SCANNED';
-            position: absolute;
-            top: -10px; right: 10px;
-            background: var(--success);
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 900;
-            padding: 4px 10px;
-            border-radius: 20px;
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-            animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+.rail-head {
+  padding: 20px 18px 18px;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 11px;
+}
 
-        @keyframes bounceIn {
-            from { transform: scale(0); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        
-        .barcode-actions {
-            margin-top: 8px;
-            display: flex;
-            gap: 8px;
-        }
-        .action-btn {
-            flex: 1;
-            padding: 6px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: #f1f5f9;
-            color: #475569;
-            border: none;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .action-btn:hover {
-            background: var(--accent-primary);
-            color: white;
-        }
+.mark {
+  width: 32px; height: 32px; flex: none;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: grid; place-items: center;
+  font-family: var(--f-mono);
+  font-weight: 600; font-size: 15px;
+  position: relative;
+}
+/* 안전 스트라이프 — 현장 장비의 시각 언어 */
+.mark::after {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
+  background: repeating-linear-gradient(-45deg,
+    rgba(0,0,0,.55) 0 3px, transparent 3px 6px);
+}
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+.rail-title { font-size: 14px; font-weight: 600; letter-spacing: -.01em; line-height: 1.25; }
+.rail-sub { font-family: var(--f-mono); font-size: 10px; color: var(--faint); letter-spacing: .1em; margin-top: 2px; }
 
-        /* 3 Column Grid */
-        .modern-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            height: 100%;
-        }
-        @media (max-width: 1400px) { .modern-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 900px) { .modern-grid { grid-template-columns: 1fr; } }
+.rail-nav { padding: 14px 10px; display: flex; flex-direction: column; gap: 3px; }
 
-        /* Theme Toggle Switch */
-        .switch-toggle {
-            position: relative;
-            width: 50px; height: 26px;
-            background: var(--bg-input);
-            border-radius: 20px;
-            cursor: pointer;
-            border: 1px solid var(--border-glass);
-            transition: 0.3s;
-        }
-        .switch-toggle::after {
-            content: '';
-            position: absolute;
-            top: 2px; left: 2px;
-            width: 20px; height: 20px;
-            border-radius: 50%;
-            background: var(--accent-primary);
-            transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        [data-theme="light"] .switch-toggle::after { transform: translateX(24px); background: #f59e0b; }
+.nav-item {
+  position: relative;
+  display: flex; align-items: flex-start; gap: 11px;
+  padding: 12px 12px 12px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--r);
+  background: none;
+  color: var(--dim);
+  font-family: var(--f-sans); font-size: 13px; font-weight: 500;
+  text-align: left; cursor: pointer;
+  transition: color .18s var(--ease), background .18s var(--ease), border-color .18s var(--ease);
+}
+.nav-item::before {
+  content: '';
+  position: absolute; left: 0; top: 50%;
+  width: 2px; height: 0;
+  background: var(--accent);
+  transform: translateY(-50%);
+  transition: height .28s var(--ease);
+}
+.nav-item:hover { color: var(--text); background: var(--panel-2); }
+.nav-item.active {
+  color: var(--text);
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+.nav-item.active::before { height: 100%; }
+.nav-item svg { width: 17px; height: 17px; flex: none; margin-top: 1px; stroke-width: 1.6; }
+.nav-item.active svg { color: var(--accent); }
+.nav-label { line-height: 1.35; }
+.nav-note {
+  display: block;
+  font-family: var(--f-mono); font-size: 9.5px;
+  letter-spacing: .08em; color: var(--faint);
+  margin-top: 3px; text-transform: uppercase;
+}
+.nav-item.active .nav-note { color: var(--accent); opacity: .85; }
 
-        /* Checkbox */
-        .custom-checkbox {
-            appearance: none;
-            width: 20px; height: 20px;
-            border: 2px solid var(--border-glass);
-            border-radius: 6px;
-            background: var(--bg-input);
-            cursor: pointer;
-            position: relative;
-            transition: 0.2s;
-        }
-        .custom-checkbox:checked {
-            background: var(--accent-primary);
-            border-color: var(--accent-primary);
-        }
-        .custom-checkbox:checked::after {
-            content: '✓';
-            position: absolute;
-            color: white;
-            font-size: 14px;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        
-        .section-title {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--text-tertiary);
-            margin-bottom: 1rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .section-title::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border-glass);
-        }
+.rail-foot {
+  margin-top: auto;
+  padding: 14px 18px;
+  border-top: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.rail-ver { font-family: var(--f-mono); font-size: 10px; color: var(--faint); letter-spacing: .08em; }
 
-        /* Glass Header */
-        .glass-header {
-            background: rgba(var(--bg-body), 0.6);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border-glass);
-            position: sticky;
-            top: 0;
-            z-index: 40;
-        }
+/* 테마 스위치 */
+.theme-btn {
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  color: var(--dim); cursor: pointer;
+  transition: all .18s var(--ease);
+}
+.theme-btn:hover { color: var(--accent); border-color: var(--accent-line); }
+.theme-btn svg { width: 15px; height: 15px; stroke-width: 1.7; }
+[data-theme="dark"] .icon-sun { display: block; }
+[data-theme="dark"] .icon-moon { display: none; }
+[data-theme="light"] .icon-sun { display: none; }
+[data-theme="light"] .icon-moon { display: block; }
 
-        /* =====================================================
-           THEME OVERRIDES — Dark tone-down + Light blue palette
-           ===================================================== */
+/* ---------- 메인 ---------- */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
-        /* Dark mode: muted gradient text (was neon indigo/fuchsia/teal) */
-        [data-theme="dark"] .gradient-text {
-            background: linear-gradient(to right, #c7d2fe, #a5b4fc);
-            -webkit-background-clip: text;
-            background-clip: text;
-        }
+.view { flex: 1; min-height: 0; flex-direction: column; display: none; }
+.view.active { display: flex; animation: viewIn .32s var(--ease) both; }
+@keyframes viewIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-        /* Light mode: ambient background → soft blue mesh */
-        [data-theme="light"] .ambient-bg {
-            background:
-                radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.05), transparent 30%),
-                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.05), transparent 30%);
-        }
-        [data-theme="light"] .gradient-text {
-            background: linear-gradient(to right, #1d4ed8, #3b82f6);
-            -webkit-background-clip: text;
-            background-clip: text;
-        }
+.topbar {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  flex: none;
+}
+.topbar h1 { margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -.015em; }
+.topbar .sub { font-family: var(--f-mono); font-size: 10.5px; color: var(--faint); letter-spacing: .1em; margin-top: 3px; text-transform: uppercase; }
+.topbar-actions { display: flex; gap: 8px; flex: none; }
 
-        /* Light mode: Column A (indigo → blue-700) */
-        [data-theme="light"] .text-indigo-400,
-        [data-theme="light"] .text-indigo-300 { color: #1d4ed8 !important; }
-        [data-theme="light"] .bg-indigo-500   { background-color: #1d4ed8 !important; }
-        [data-theme="light"] .bg-indigo-500\/10 { background-color: rgba(29, 78, 216, 0.08) !important; }
-        [data-theme="light"] .border-indigo-500\/20 { border-color: rgba(29, 78, 216, 0.25) !important; }
+/* ---------- 버튼 ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 14px;
+  font-family: var(--f-sans); font-size: 12.5px; font-weight: 500;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  background: var(--panel-2);
+  color: var(--text);
+  cursor: pointer; white-space: nowrap;
+  transition: all .16s var(--ease);
+}
+.btn svg { width: 15px; height: 15px; stroke-width: 1.7; flex: none; }
+.btn:hover:not(:disabled) { background: var(--raised); border-color: var(--faint); transform: translateY(-1px); }
+.btn:active:not(:disabled) { transform: none; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
 
-        /* Light mode: Column B (pink → blue-500) */
-        [data-theme="light"] .text-pink-400,
-        [data-theme="light"] .text-pink-300 { color: #3b82f6 !important; }
-        [data-theme="light"] .bg-pink-500   { background-color: #3b82f6 !important; }
-        [data-theme="light"] .bg-pink-500\/10 { background-color: rgba(59, 130, 246, 0.08) !important; }
-        [data-theme="light"] .border-pink-500\/20 { border-color: rgba(59, 130, 246, 0.25) !important; }
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent); border-color: var(--accent);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 18px -8px var(--accent);
+}
+.btn-danger:hover:not(:disabled) { color: var(--bad); border-color: var(--bad); background: var(--bad-soft); }
+.btn-sm { padding: 6px 10px; font-size: 11.5px; }
+.btn-icon { padding: 9px; }
 
-        /* Light mode: Column C (emerald → sky-600) */
-        [data-theme="light"] .text-emerald-400,
-        [data-theme="light"] .text-emerald-300 { color: #0284c7 !important; }
-        [data-theme="light"] .bg-emerald-500 { background-color: #0284c7 !important; }
-        [data-theme="light"] .bg-emerald-500\/10 { background-color: rgba(2, 132, 199, 0.08) !important; }
-        [data-theme="light"] .border-emerald-500\/20 { border-color: rgba(2, 132, 199, 0.25) !important; }
-        [data-theme="light"] .hover\:bg-emerald-500\/20:hover { background-color: rgba(2, 132, 199, 0.1) !important; }
-        [data-theme="light"] .hover\:text-emerald-400:hover { color: #0284c7 !important; }
-        [data-theme="light"] .hover\:border-emerald-500\/50:hover { border-color: rgba(2, 132, 199, 0.5) !important; }
+/* ---------- 설정 툴바 ---------- */
+.toolbar {
+  padding: 11px 22px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-2);
+  display: flex; align-items: center; gap: 22px;
+  flex: none; flex-wrap: wrap;
+}
+.ctl { display: flex; align-items: center; gap: 9px; }
+.ctl > .tag { flex: none; }
 
-        /* Light mode: kill neon dot glows */
-        [data-theme="light"] [class*="shadow-[0_0_10px"] { box-shadow: none !important; }
+select, input[type="text"], input[type="number"] {
+  font-family: var(--f-mono); font-size: 12px;
+  padding: 7px 10px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  transition: border-color .16s var(--ease), box-shadow .16s var(--ease);
+}
+select { font-family: var(--f-sans); cursor: pointer; }
+select:focus, input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
 
-        /* Light mode: sidebar logo + info card gradients */
-        [data-theme="light"] .from-indigo-500 { --tw-gradient-from: #2563eb !important; }
-        [data-theme="light"] .to-pink-500     { --tw-gradient-to: #3b82f6 !important; }
-        [data-theme="light"] .to-purple-500   { --tw-gradient-to: #60a5fa !important; }
-        [data-theme="light"] .from-indigo-500\/10 { --tw-gradient-from: rgba(37, 99, 235, 0.08) !important; }
-        [data-theme="light"] .to-purple-500\/10   { --tw-gradient-to: rgba(59, 130, 246, 0.08) !important; }
-        [data-theme="light"] .\!border-indigo-500\/20 { border-color: rgba(37, 99, 235, 0.2) !important; }
+/* 슬라이더 */
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 92px; height: 18px; background: none; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 2px; background: var(--line-2);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px; height: 12px; margin-top: -5px;
+  background: var(--accent);
+  border-radius: 0;
+  transition: transform .14s var(--ease);
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.25); }
+input[type="range"]::-moz-range-track { height: 2px; background: var(--line-2); }
+input[type="range"]::-moz-range-thumb {
+  width: 12px; height: 12px; border: none; border-radius: 0; background: var(--accent);
+}
+.val { font-family: var(--f-mono); font-size: 11.5px; color: var(--accent); min-width: 42px; font-variant-numeric: tabular-nums; }
 
-        /* Light mode: btn-primary loses pink gradient */
-        [data-theme="light"] .btn-primary {
-            background: linear-gradient(135deg, #2563eb, #3b82f6);
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
-        }
-        [data-theme="light"] .btn-primary:hover:not(:disabled) {
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-        }
+/* 체크박스 */
+.check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px; color: var(--dim); user-select: none; }
+.check:hover { color: var(--text); }
+.check input { display: none; }
+.check .box {
+  width: 15px; height: 15px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  display: grid; place-items: center;
+  transition: all .16s var(--ease);
+}
+.check input:checked + .box { background: var(--accent); border-color: var(--accent); }
+.check .box::after {
+  content: ''; width: 7px; height: 3.5px;
+  border-left: 1.8px solid var(--accent-ink);
+  border-bottom: 1.8px solid var(--accent-ink);
+  transform: rotate(-45deg) scale(0); transform-origin: center;
+  transition: transform .16s var(--ease);
+  margin-top: -1.5px;
+}
+.check input:checked + .box::after { transform: rotate(-45deg) scale(1); }
 
-        /* Light mode: barcode card shadow */
-        [data-theme="light"] .barcode-card { box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08); }
-        [data-theme="light"] .barcode-card:hover { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12); }
-    </style>
+/* 토글 스위치 (접두어용) */
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+.switch input { display: none; }
+.switch .track {
+  width: 30px; height: 16px;
+  background: var(--line-2);
+  border-radius: 999px;
+  position: relative;
+  transition: background .2s var(--ease);
+  flex: none;
+}
+.switch .track::after {
+  content: '';
+  position: absolute; top: 2px; left: 2px;
+  width: 12px; height: 12px;
+  background: var(--panel);
+  border-radius: 50%;
+  transition: transform .22s var(--ease);
+}
+.switch input:checked + .track { background: var(--accent); }
+.switch input:checked + .track::after { transform: translateX(14px); }
+.switch .txt {
+  font-family: var(--f-mono); font-size: 10px; font-weight: 500;
+  letter-spacing: .06em; color: var(--faint);
+  transition: color .2s var(--ease);
+  white-space: nowrap;
+}
+.switch input:checked ~ .txt { color: var(--accent); }
+
+/* ============================================================
+   뷰 1 — 대량 생성기
+   ============================================================ */
+.scroll { flex: 1; min-height: 0; overflow-y: auto; }
+
+/* 입력 3열 */
+.inputs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+  transition: max-height .34s var(--ease), opacity .24s var(--ease);
+  max-height: 340px;
+}
+.inputs.collapsed { max-height: 0; opacity: 0; border-bottom-color: transparent; }
+
+.src { background: var(--panel); padding: 14px 16px 16px; display: flex; flex-direction: column; min-width: 0; }
+.src-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; min-height: 26px; }
+.src-id { display: flex; align-items: center; gap: 8px; }
+.src-dot { width: 7px; height: 7px; flex: none; background: var(--src-color); }
+.src-name { font-family: var(--f-mono); font-size: 11px; font-weight: 600; letter-spacing: .12em; color: var(--src-color); }
+.src-count { font-family: var(--f-mono); font-size: 10px; color: var(--faint); }
+
+.src[data-src="0"] { --src-color: var(--accent); }
+.src[data-src="1"] { --src-color: #4EA8DE; }
+.src[data-src="2"] { --src-color: #35D07F; }
+
+textarea {
+  flex: 1;
+  min-height: 168px;
+  resize: none;
+  font-family: var(--f-mono); font-size: 12.5px; line-height: 1.75;
+  padding: 11px 12px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  transition: border-color .16s var(--ease), box-shadow .16s var(--ease);
+}
+textarea::placeholder { color: var(--faint); }
+
+/* 결과 헤더 */
+.res-bar {
+  padding: 11px 22px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-2);
+  position: sticky; top: 0; z-index: 10;
+  flex-wrap: wrap;
+}
+.res-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.total { font-family: var(--f-mono); font-size: 12px; color: var(--dim); }
+.total b { color: var(--accent); font-weight: 600; }
+
+.filters { display: flex; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.filter {
+  padding: 5px 12px;
+  background: var(--panel);
+  border: none;
+  font-family: var(--f-mono); font-size: 11px; font-weight: 500; letter-spacing: .08em;
+  color: var(--faint); cursor: pointer;
+  transition: all .15s var(--ease);
+}
+.filter:hover { color: var(--text); background: var(--raised); }
+.filter.active { background: var(--accent); color: var(--accent-ink); }
+
+/* 바코드 배치 — 소스별 세로 스택. A·B·C 열이 나란히 선다 */
+/* 열 폭이 곧 카드 크기다. 슬라이더를 움직이면 카드가 바로 커지고,
+   폭이 모자라면 열 수가 알아서 줄어든다. */
+.grid {
+  padding: 20px 22px 60px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, min(var(--card-w), 100%));
+  gap: 28px;
+  align-items: start;
+  justify-content: center;
+}
+/* 필터로 한 소스만 볼 때는 가운데 한 줄로 */
+.grid.solo {
+  grid-template-columns: min(var(--card-w), 100%);
+}
+/* 빈 상태는 격자를 쓰지 않는다 */
+.grid.blank { display: block; }
+.grid-group { min-width: 0; }
+.grid-group.hidden { display: none; }
+.group-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 13px;
+}
+.group-head .bar { width: 3px; height: 13px; background: var(--src-color); flex: none; }
+.group-head .name { font-family: var(--f-mono); font-size: 11px; font-weight: 600; letter-spacing: .12em; color: var(--src-color); }
+.group-head .rule { flex: 1; height: 1px; background: var(--line); }
+.group-head .n { font-family: var(--f-mono); font-size: 10.5px; color: var(--faint); }
+.grid-group[data-src="0"] { --src-color: var(--accent); }
+.grid-group[data-src="1"] { --src-color: #4EA8DE; }
+.grid-group[data-src="2"] { --src-color: #35D07F; }
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.bc {
+  width: 100%;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 12px 12px 0;
+  display: flex; flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease);
+  animation: cardIn .3s var(--ease) both;
+}
+@keyframes cardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.bc:hover { transform: translateY(-2px); border-color: var(--accent-line); box-shadow: 0 10px 24px -14px rgba(0,0,0,.55); }
+
+.bc-idx {
+  position: absolute; top: 8px; left: 10px;
+  font-family: var(--f-mono); font-size: 9.5px; font-weight: 600;
+  color: rgba(22,21,15,.3);
+  letter-spacing: .06em;
+}
+/* 바코드는 실제 크기 그대로 — 늘이지 않는다.
+   그래야 값 길이와 상관없이 모든 카드의 바 굵기가 같다.
+   카드보다 넓을 때만 비율을 지킨 채 줄어든다. */
+.bc-svg {
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px 12px 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+.bc-svg svg { display: block; max-width: 100%; height: auto; }
+
+.bc-foot {
+  border-top: 1px solid rgba(22,21,15,.1);
+  margin: 0 -12px; padding: 8px 12px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.bc-val {
+  font-family: var(--f-mono); font-size: 11px; font-weight: 500;
+  color: var(--paper-ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.bc-copy {
+  flex: none;
+  padding: 4px 8px;
+  font-family: var(--f-mono); font-size: 10px; font-weight: 500;
+  background: transparent;
+  border: 1px solid rgba(22,21,15,.18);
+  border-radius: var(--r);
+  color: rgba(22,21,15,.55);
+  cursor: pointer;
+  opacity: 0;
+  transition: all .16s var(--ease);
+}
+.bc:hover .bc-copy { opacity: 1; }
+.bc-copy:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* 접두어가 자동으로 붙은 카드 표시 */
+.bc-pre {
+  position: absolute; top: 8px; right: 10px;
+  font-family: var(--f-mono); font-size: 9px; font-weight: 600;
+  letter-spacing: .06em;
+  color: var(--accent);
+  background: rgba(255,90,31,.12);
+  border: 1px solid rgba(255,90,31,.3);
+  padding: 1px 5px; border-radius: var(--r);
+}
+
+/* 스캔 검증 성공 */
+.bc.scanned {
+  border-color: var(--ok);
+  box-shadow: 0 0 0 2px var(--ok), 0 10px 30px -12px var(--ok);
+  animation: scanPulse .7s var(--ease);
+}
+@keyframes scanPulse {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.bc.scanned::before {
+  content: '확인';
+  position: absolute; top: 0; right: 0;
+  background: var(--ok); color: #05130C;
+  font-family: var(--f-mono); font-size: 9px; font-weight: 600;
+  letter-spacing: .1em;
+  padding: 3px 7px;
+  z-index: 2;
+}
+
+/* 오류 카드 */
+.bc.err { background: var(--panel-2); border-color: var(--bad); }
+.bc-err {
+  padding: 22px 12px 20px;
+  text-align: center;
+  font-family: var(--f-mono); font-size: 11px; line-height: 1.6;
+  color: var(--bad);
+}
+.bc-err span { display: block; color: var(--dim); font-size: 10px; margin-top: 5px; word-break: break-all; }
+
+/* 빈 상태 */
+.empty {
+  padding: 90px 20px;
+  text-align: center;
+}
+.empty-mark {
+  width: 46px; height: 46px; margin: 0 auto 18px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  display: grid; place-items: center;
+  color: var(--faint);
+}
+.empty-mark svg { width: 22px; height: 22px; stroke-width: 1.4; }
+.empty h3 { margin: 0 0 7px; font-size: 14px; font-weight: 500; color: var(--dim); }
+.empty p { margin: 0; font-family: var(--f-mono); font-size: 11.5px; color: var(--faint); line-height: 1.7; }
+
+/* ============================================================
+   뷰 2 — 프린트 생성기
+   ============================================================ */
+.print-layout {
+  flex: 1; min-height: 0;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+}
+
+.print-form {
+  border-right: 1px solid var(--line);
+  background: var(--panel);
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.fset { margin-bottom: 26px; }
+.fset-head {
+  display: flex; align-items: center; gap: 9px;
+  margin-bottom: 13px;
+}
+.fset-head .tag { flex: none; }
+.fset-head .rule { flex: 1; height: 1px; background: var(--line); }
+
+.field { margin-bottom: 13px; }
+.field label,
+.field .field-label {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11.5px; font-weight: 500; color: var(--dim);
+  margin-bottom: 6px;
+  gap: 10px;
+}
+/* 필드 머리에 들어가는 토글은 라벨 텍스트를 따라간다 */
+.field-label .switch { margin-bottom: 0; }
+.field-note.on { color: var(--accent); }
+.field label .opt { font-family: var(--f-mono); font-size: 9.5px; color: var(--faint); letter-spacing: .06em; }
+.field input[type="text"], .field input[type="number"], .field select { width: 100%; }
+.field-note { font-family: var(--f-mono); font-size: 10px; color: var(--faint); margin-top: 5px; line-height: 1.5; }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row2 .field { margin-bottom: 0; }
+
+/* 미리보기 무대 */
+.print-stage {
+  background: var(--bg);
+  overflow: auto;
+  display: flex; flex-direction: column;
+  min-width: 0;
+}
+.stage-bar {
+  padding: 11px 22px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-2);
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  flex: none;
+}
+.stage-info { font-family: var(--f-mono); font-size: 11px; color: var(--dim); }
+.stage-info b { color: var(--accent); font-weight: 600; }
+
+.stage-area {
+  flex: 1;
+  display: grid; place-items: center;
+  padding: 40px 24px;
+  min-height: 0;
+  overflow: auto;
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: -1px -1px;
+}
+.stage-wrap { position: relative; }
+.stage-shadow { box-shadow: 0 20px 50px -20px rgba(0,0,0,.6); }
+
+/* 라벨 자체 — 화면·인쇄 공용 */
+.label {
+  background: #FFFFFF;
+  color: #000000;
+  font-family: var(--f-sans);
+  display: flex; flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+/* 라벨 항목 — 항목마다 코드(1D 또는 QR) 한 개 */
+.li {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+.li-bar { flex-direction: column; align-items: center; }
+.li-qr  { flex-direction: row; align-items: center; justify-content: center; }
+
+.li-code { min-height: 0; min-width: 0; display: flex; align-items: center; justify-content: center; }
+.li-bar .li-code { width: 100%; }
+.li-qr  .li-code { height: 100%; aspect-ratio: 1 / 1; flex: none; }
+.li-code svg { display: block; width: 100%; height: 100%; }
+/* 1D 는 높이를 기준으로 맞춘다. 항목마다 코드 높이가 같고 폭만 값 길이를 따른다.
+   잡아늘이지 않으므로 바 굵기가 항목끼리 어긋나지 않는다. */
+.li-bar .li-code svg { height: 100%; width: auto; max-width: 100%; }
+
+.li-head { display: flex; align-items: baseline; justify-content: center; gap: 1.4mm; min-width: 0; }
+.li-qr .li-txt { display: flex; flex-direction: column; justify-content: center; min-width: 0; overflow: hidden; }
+.li-key {
+  font-family: var(--f-mono);
+  font-weight: 600;
+  letter-spacing: .03em;
+  color: #666;
+  flex: none;
+  line-height: 1.2;
+}
+.li-val {
+  font-weight: 700; color: #000;
+  line-height: 1.2;
+  overflow: hidden;
+  word-break: break-all;
+}
+.li-err {
+  font-family: var(--f-mono);
+  color: #C0341F;
+  text-align: center;
+  width: 100%;
+  line-height: 1.3;
+}
+.label-empty {
+  display: grid; place-items: center;
+  height: 100%;
+  font-family: var(--f-mono); font-size: 3mm; color: #999;
+  text-align: center; line-height: 1.6;
+}
+
+/* ============================================================
+   토스트
+   ============================================================ */
+.toasts {
+  position: fixed; bottom: 22px; right: 22px;
+  z-index: 500;
+  display: flex; flex-direction: column-reverse; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px;
+  background: var(--raised);
+  border: 1px solid var(--line-2);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--r);
+  font-family: var(--f-mono); font-size: 11.5px;
+  color: var(--text);
+  box-shadow: 0 14px 34px -14px rgba(0,0,0,.7);
+  animation: toastIn .26s var(--ease) both;
+  max-width: 380px;
+}
+.toast.out { animation: toastOut .24s var(--ease) forwards; }
+.toast.ok  { border-left-color: var(--ok); }
+.toast.bad { border-left-color: var(--bad); }
+.toast .dot { width: 6px; height: 6px; flex: none; background: var(--accent); }
+.toast.ok .dot  { background: var(--ok); }
+.toast.bad .dot { background: var(--bad); }
+@keyframes toastIn  { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+@keyframes toastOut { to { opacity: 0; transform: translateX(20px); } }
+
+/* ============================================================
+   인쇄
+   ============================================================ */
+#print-root { display: none; }
+
+@media print {
+  html, body { height: auto; overflow: visible; background: #fff; }
+  body::after { display: none; }
+  .app, .toasts { display: none !important; }
+  #print-root { display: block !important; }
+  .print-page {
+    page-break-after: always;
+    break-after: page;
+    overflow: hidden;
+  }
+  .print-page:last-child { page-break-after: auto; break-after: auto; }
+  .label { box-shadow: none !important; }
+}
+
+/* ============================================================
+   반응형
+   ============================================================ */
+@media (max-width: 1180px) {
+  .print-layout { grid-template-columns: 330px 1fr; }
+  .grid { gap: 22px; }
+}
+@media (max-width: 980px) {
+  :root { --rail-w: 64px; }
+  .rail-title, .rail-sub, .nav-label, .rail-ver { display: none; }
+  .rail-head { justify-content: center; padding: 18px 8px; }
+  .rail-nav { padding: 12px 8px; }
+  .nav-item { justify-content: center; padding: 12px 8px; }
+  .rail-foot { justify-content: center; }
+  .inputs { grid-template-columns: 1fr; max-height: 900px; }
+  .print-layout { grid-template-columns: 1fr; }
+  .print-form { border-right: none; border-bottom: 1px solid var(--line); }
+}
+</style>
 </head>
+
 <body>
 
-<div class="ambient-bg"></div>
+<div class="app">
 
-<div id="app-container" class="app-container">
-    
-    <!-- MODERN SIDEBAR -->
-    <aside id="sidebar">
-        <div class="p-6 border-b border-[var(--border-glass)] flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-lg">B</div>
-                <span class="font-bold text-lg tracking-tight">설정</span>
-            </div>
-            <div class="switch-toggle" id="theme-toggle" title="테마 전환"></div>
+  <!-- ===== 좌측 카테고리 레일 ===== -->
+  <aside class="rail">
+    <div class="rail-head">
+      <div class="mark">B</div>
+      <div>
+        <div class="rail-title">Bennett</div>
+        <div class="rail-sub">BARCODE 3.0</div>
+      </div>
+    </div>
+
+    <nav class="rail-nav">
+      <button class="nav-item active" data-view="gen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 5v14M6.5 5v14M10 5v14M13.5 5v10M17 5v14M20.5 5v14" stroke-linecap="round"/></svg>
+        <span class="nav-label">대량 바코드 생성기<span class="nav-note">BULK / A·B·C</span></span>
+      </button>
+
+      <button class="nav-item" data-view="print">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9V3h12v6M6 18H4a1 1 0 01-1-1v-5a2 2 0 012-2h14a2 2 0 012 2v5a1 1 0 01-1 1h-2" stroke-linecap="round" stroke-linejoin="round"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg>
+        <span class="nav-label">바코드 프린트 생성기<span class="nav-note">Print</span></span>
+      </button>
+    </nav>
+
+    <div class="rail-foot">
+      <span class="rail-ver">v3.0</span>
+      <button class="theme-btn" id="theme-btn" title="테마 전환" aria-label="테마 전환">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===== 메인 ===== -->
+  <main class="main">
+
+    <!-- ========== 뷰 1: 대량 생성기 ========== -->
+    <section class="view active" id="view-gen">
+
+      <div class="topbar">
+        <div>
+          <h1>대량 바코드 생성기</h1>
+          <div class="sub">3 SOURCES · MAX 100 EACH</div>
         </div>
-        
-        <div class="flex-1 overflow-y-auto p-6 space-y-8">
-            <!-- Format Section -->
-            <div>
-                <div class="section-title">바코드 포맷</div>
-                <select id="barcode-format" class="hover:border-indigo-500/50 focus:border-indigo-500">
-                    <option value="CODE128" selected>CODE128 (표준)</option>
-                    <option value="CODE39">CODE39</option>
-                    <option value="EAN13">EAN-13 (12-13자리)</option>
-                    <option value="UPC">UPC (11-12자리)</option>
-                    <option value="ITF">ITF-14 (물류용)</option>
-                    <option value="MSI">MSI</option>
-                </select>
-            </div>
+        <div class="topbar-actions">
+          <button class="btn btn-sm" id="collapse-btn" title="입력창 접기/펼치기">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 15l-6-6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>입력 접기</span>
+          </button>
+          <button class="btn btn-danger" id="reset-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 7l-.9 12.1A2 2 0 0116.1 21H7.9a2 2 0 01-2-1.9L5 7M10 11v6M14 11v6M15 7V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>초기화</span>
+          </button>
+          <button class="btn" id="copyall-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="9" y="9" width="12" height="12" rx="1"/><path d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1" stroke-linecap="round"/></svg>
+            <span>전체 내보내기</span>
+          </button>
+          <button class="btn btn-primary" id="gen-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 5v14M7 5v14M11 5v14M15 5v10M19 5v14" stroke-linecap="round"/></svg>
+            <span>생성하기</span>
+          </button>
+        </div>
+      </div>
 
-            <!-- Size Section -->
-            <div>
-                <div class="section-title">크기 설정</div>
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="text-[var(--text-secondary)]">바 두께</span>
-                            <span id="barcode-width-value" class="text-[var(--accent-primary)] font-bold font-mono">2.0</span>
-                        </div>
-                        <input type="range" id="barcode-width" min="1" max="4" value="2" step="0.1">
-                    </div>
+      <div class="toolbar">
+        <div class="ctl">
+          <span class="tag">포맷</span>
+          <select id="fmt">
+            <option value="CODE128" selected>CODE128 (표준)</option>
+            <option value="CODE39">CODE39</option>
+            <option value="EAN13">EAN-13</option>
+            <option value="UPC">UPC</option>
+            <option value="ITF">ITF-14</option>
+            <option value="MSI">MSI</option>
+          </select>
+        </div>
+        <div class="ctl">
+          <span class="tag">바 두께</span>
+          <input type="range" id="bw" min="1" max="6" step=".1" value="1.6">
+          <span class="val" id="bw-v">1.6</span>
+        </div>
+        <div class="ctl">
+          <span class="tag">높이</span>
+          <input type="range" id="bh" min="30" max="240" value="100">
+          <span class="val" id="bh-v">100px</span>
+        </div>
+        <div class="ctl">
+          <span class="tag">카드 크기</span>
+          <input type="range" id="cs" min="220" max="700" step="10" value="380">
+          <span class="val" id="cs-v">380</span>
+        </div>
+        <label class="check">
+          <input type="checkbox" id="showval" checked>
+          <span class="box"></span>
+          <span>값 텍스트</span>
+        </label>
+      </div>
 
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="text-[var(--text-secondary)]">높이</span>
-                            <span id="barcode-height-value" class="text-[var(--accent-primary)] font-bold font-mono">100px</span>
-                        </div>
-                        <input type="range" id="barcode-height" min="30" max="150" value="100">
-                    </div>
-                </div>
+      <div class="scroll">
+
+        <div class="inputs" id="inputs">
+          <!-- 소스 A -->
+          <div class="src" data-src="0">
+            <div class="src-head">
+              <div class="src-id">
+                <span class="src-dot"></span>
+                <span class="src-name">소스 A</span>
+                <span class="src-count" id="cnt-0">0</span>
+              </div>
+              <label class="switch" title="입력값 앞에 179-RCRT1- 을 자동으로 붙입니다">
+                <input type="checkbox" id="prefix-toggle" checked>
+                <span class="track"></span>
+                <span class="txt">179-RCRT1- 자동</span>
+              </label>
             </div>
-            
-            <!-- Options Section -->
-            <div>
-                <div class="section-title">옵션</div>
-                <label class="flex items-center gap-3 cursor-pointer group">
-                    <input type="checkbox" id="display-value" class="custom-checkbox" checked>
-                    <span class="group-hover:text-[var(--text-primary)] transition-colors">값 텍스트 표시</span>
+            <textarea id="in-0" spellcheck="false" placeholder="17-441&#10;17-442&#10;&#10;179-RCRT1- 은 자동으로 붙습니다"></textarea>
+          </div>
+
+          <!-- 소스 B -->
+          <div class="src" data-src="1">
+            <div class="src-head">
+              <div class="src-id">
+                <span class="src-dot"></span>
+                <span class="src-name">소스 B</span>
+                <span class="src-count" id="cnt-1">0</span>
+              </div>
+              <span class="tag">최대 100</span>
+            </div>
+            <textarea id="in-1" spellcheck="false" placeholder="한 줄에 하나씩 입력하세요"></textarea>
+          </div>
+
+          <!-- 소스 C -->
+          <div class="src" data-src="2">
+            <div class="src-head">
+              <div class="src-id">
+                <span class="src-dot"></span>
+                <span class="src-name">소스 C</span>
+                <span class="src-count" id="cnt-2">0</span>
+              </div>
+              <span class="tag">최대 100</span>
+            </div>
+            <textarea id="in-2" spellcheck="false" placeholder="한 줄에 하나씩 입력하세요"></textarea>
+          </div>
+        </div>
+
+        <div class="res-bar">
+          <div class="res-left">
+            <span class="total">총 <b id="total">0</b>개</span>
+            <div class="filters" id="filters">
+              <button class="filter active" data-f="all">전체</button>
+              <button class="filter" data-f="0">A</button>
+              <button class="filter" data-f="1">B</button>
+              <button class="filter" data-f="2">C</button>
+            </div>
+          </div>
+          <span class="tag">스캐너로 바코드를 읽으면 해당 카드가 녹색으로 표시됩니다</span>
+        </div>
+
+        <div class="grid" id="grid">
+          <div class="empty">
+            <div class="empty-mark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 5v14M6.5 5v14M10 5v14M13.5 5v10M17 5v14M20.5 5v14" stroke-linecap="round"/></svg>
+            </div>
+            <h3>아직 생성된 바코드가 없습니다</h3>
+            <p>위 입력창에 값을 넣으면 자동으로 생성됩니다</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========== 뷰 2: 프린트 생성기 ========== -->
+    <section class="view" id="view-print">
+
+      <div class="topbar">
+        <div>
+          <h1>바코드 프린트 생성기 <span style="color:var(--faint);font-weight:400;font-size:14px;">Print</span></h1>
+          <div class="sub">LABEL PRINT · 원하는 항목만 입력</div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn" id="p-clear">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 7l-.9 12.1A2 2 0 0116.1 21H7.9a2 2 0 01-2-1.9L5 7M4 7h16" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>비우기</span>
+          </button>
+          <button class="btn btn-primary" id="p-print">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9V3h12v6M6 18H4a1 1 0 01-1-1v-5a2 2 0 012-2h14a2 2 0 012 2v5a1 1 0 01-1 1h-2" stroke-linecap="round" stroke-linejoin="round"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg>
+            <span>출력</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="print-layout">
+
+        <!-- 입력 폼 -->
+        <div class="print-form">
+
+          <div class="fset">
+            <div class="fset-head"><span class="tag">라벨 내용</span><span class="rule"></span></div>
+
+            <div class="field">
+              <div class="field-label">
+                <span>바코드 <span class="opt">선택</span></span>
+                <label class="switch" title="입력값 앞에 179-RCRT1- 을 자동으로 붙입니다">
+                  <input type="checkbox" id="p-prefix-toggle" checked>
+                  <span class="track"></span>
+                  <span class="txt">179-RCRT1- 자동</span>
                 </label>
+              </div>
+              <input type="text" id="p-code" placeholder="17-441" spellcheck="false">
+              <div class="field-note" id="p-code-preview"></div>
+            </div>
+            <div class="field">
+              <label>대상 <span class="opt">선택</span></label>
+              <input type="text" id="p-target" placeholder="예: 홍길동 / A제품">
+            </div>
+            <div class="field">
+              <label>목적 <span class="opt">선택</span></label>
+              <input type="text" id="p-purpose" placeholder="예: 출고 검수">
+            </div>
+            <div class="field">
+              <label>위치 <span class="opt">선택</span></label>
+              <input type="text" id="p-place" placeholder="예: A동 3층 R-12">
+              <div class="field-note">비워둔 항목은 라벨에서 자동으로 빠집니다.</div>
+            </div>
+          </div>
+
+          <div class="fset">
+            <div class="fset-head"><span class="tag">프린터 설정</span><span class="rule"></span></div>
+
+            <div class="field">
+              <label>용지 규격</label>
+              <select id="p-preset">
+                <option value="40x30">라벨 40 × 30 mm</option>
+                <option value="50x30" selected>라벨 50 × 30 mm</option>
+                <option value="60x40">라벨 60 × 40 mm</option>
+                <option value="70x50">라벨 70 × 50 mm</option>
+                <option value="100x50">라벨 100 × 50 mm</option>
+                <option value="100x150">배송 라벨 100 × 150 mm</option>
+                <option value="210x297">A4 210 × 297 mm</option>
+                <option value="custom">직접 입력</option>
+              </select>
             </div>
 
-            <!-- Info Card -->
-            <div class="glass-card !bg-gradient-to-br from-indigo-500/10 to-purple-500/10 !border-indigo-500/20">
-                <div class="flex items-start gap-3">
-                    <div class="text-indigo-400 mt-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <div class="text-xs leading-relaxed text-[var(--text-secondary)]">
-                        <strong class="text-[var(--text-primary)] block mb-1">스캔 검증 모드</strong>
-                        바코드 생성 후 스캐너로 실제 바코드를 스캔해보세요. 화면의 바코드가 <span class="text-[var(--success)] font-bold">녹색</span>으로 표시됩니다.
-                    </div>
-                </div>
+            <div class="row2" style="margin-bottom:13px;">
+              <div class="field">
+                <label>가로 <span class="opt">MM</span></label>
+                <input type="number" id="p-w" min="10" max="400" step="1" value="50">
+              </div>
+              <div class="field">
+                <label>세로 <span class="opt">MM</span></label>
+                <input type="number" id="p-h" min="10" max="400" step="1" value="30">
+              </div>
             </div>
+
+            <div class="row2" style="margin-bottom:13px;">
+              <div class="field">
+                <label>여백 <span class="opt">MM</span></label>
+                <input type="number" id="p-pad" min="0" max="30" step="0.5" value="2.5">
+              </div>
+              <div class="field">
+                <label>수량 <span class="opt">장</span></label>
+                <input type="number" id="p-qty" min="1" max="200" step="1" value="1">
+              </div>
+            </div>
+
+            <div class="field">
+              <label>방향</label>
+              <select id="p-orient">
+                <option value="portrait" selected>세로 (입력한 그대로)</option>
+                <option value="landscape">가로 (가로·세로 바꿈)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>바코드 포맷</label>
+              <select id="p-fmt">
+                <option value="CODE128" selected>CODE128 (표준)</option>
+                <option value="CODE39">CODE39</option>
+                <option value="EAN13">EAN-13</option>
+                <option value="UPC">UPC</option>
+                <option value="ITF">ITF-14</option>
+                <option value="MSI">MSI</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>코드 비율 <span class="opt" id="p-bh-v">72%</span></label>
+              <input type="range" id="p-bh" min="40" max="90" step="1" value="72" style="width:100%">
+              <div class="field-note">각 항목에서 코드 이미지가 차지하는 비율입니다. 나머지는 항목 이름과 값 텍스트에 쓰입니다.</div>
+            </div>
+
+            <label class="check" style="margin-top:4px;">
+              <input type="checkbox" id="p-showval" checked>
+              <span class="box"></span>
+              <span>코드 아래 값 텍스트 표시</span>
+            </label>
+          </div>
+
         </div>
-        
-        <div class="p-4 border-t border-[var(--border-glass)] text-center text-xs text-[var(--text-tertiary)]">
-            Bennett Barcode v2.0
+
+        <!-- 미리보기 -->
+        <div class="print-stage">
+          <div class="stage-bar">
+            <span class="stage-info">
+              용지 <b id="stage-size">50 × 30 mm</b> · 수량 <b id="stage-qty">1</b>장 · 미리보기 <b id="stage-zoom">100%</b><span id="stage-codes"></span>
+            </span>
+            <span class="tag" id="stage-hint">화면에 보이는 그대로 인쇄됩니다</span>
+          </div>
+          <div class="stage-area">
+            <div class="stage-wrap" id="stage-wrap"></div>
+          </div>
         </div>
-    </aside>
-    
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
 
-    <!-- MAIN CONTENT Area -->
-    <main id="main-content">
-        <!-- Glass Header -->
-        <header class="glass-header p-4 md:p-6 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <button id="sidebar-toggle" class="btn-glass p-2 rounded-lg lg:hidden">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-                <div>
-                    <h1 class="text-2xl md:text-3xl font-bold gradient-text">Bennett 바코드 생성기</h1>
-                    <p class="text-xs text-[var(--text-secondary)] font-mono mt-1 tracking-wider opacity-80">대량 바코드 생성 시스템</p>
-                </div>
-            </div>
-            
-            <div class="flex gap-3">
-                <!-- Reset Button -->
-                <button id="reset-btn" class="btn-modern btn-glass btn-danger" title="모든 입력 및 설정 초기화">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    <span class="hidden md:inline">초기화</span>
-                </button>
+      </div>
+    </section>
 
-                <button id="generate-btn" class="btn-modern btn-primary">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                    <span class="hidden md:inline">생성하기</span>
-                </button>
-                <button id="copy-all-btn" class="btn-modern btn-glass hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-500/50">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
-                    <span class="hidden md:inline">전체 내보내기</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Content Grid -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-6">
-            <div class="modern-grid pb-20">
-                <!-- Column 1 -->
-                <div class="flex flex-col gap-4 h-full">
-                    <div class="glass-card flex flex-col flex-[1] min-h-[200px]">
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_#6366f1]"></div>
-                                <span class="text-sm font-bold text-indigo-400 tracking-wider">입력 소스 A</span>
-                            </div>
-                            <span class="text-[10px] font-mono bg-indigo-500/10 text-indigo-300 px-2 py-1 rounded border border-indigo-500/20">최대 100개</span>
-                        </div>
-                        <textarea id="barcode-input-1" class="flex-1 resize-none !bg-opacity-50 !font-mono text-sm leading-relaxed" placeholder="// 데이터를 여기에 붙여넣으세요..."></textarea>
-                    </div>
-                    
-                    <div class="glass-card flex flex-col flex-[2] min-h-[400px] bg-[var(--bg-glass)]">
-                        <div class="flex items-center gap-2 mb-4 sticky top-0 z-10">
-                            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <span class="text-xs font-bold text-[var(--text-secondary)] uppercase">바코드 이미지 A</span>
-                        </div>
-                        <div id="barcode-output-1" class="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
-                            <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
-                                <span class="font-mono text-xs">바코드 생성 대기 중...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Column 2 -->
-                <div class="flex flex-col gap-4 h-full">
-                    <div class="glass-card flex flex-col flex-[1] min-h-[200px]">
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></div>
-                                <span class="text-sm font-bold text-pink-400 tracking-wider">입력 소스 B</span>
-                            </div>
-                            <span class="text-[10px] font-mono bg-pink-500/10 text-pink-300 px-2 py-1 rounded border border-pink-500/20">최대 100개</span>
-                        </div>
-                        <textarea id="barcode-input-2" class="flex-1 resize-none !bg-opacity-50 !font-mono text-sm leading-relaxed" placeholder="// 데이터를 여기에 붙여넣으세요..."></textarea>
-                    </div>
-                    
-                    <div class="glass-card flex flex-col flex-[2] min-h-[400px] bg-[var(--bg-glass)]">
-                        <div class="flex items-center gap-2 mb-4 sticky top-0 z-10">
-                            <svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <span class="text-xs font-bold text-[var(--text-secondary)] uppercase">바코드 이미지 B</span>
-                        </div>
-                        <div id="barcode-output-2" class="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
-                            <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
-                                <span class="font-mono text-xs">바코드 생성 대기 중...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Column 3 -->
-                <div class="flex flex-col gap-4 h-full">
-                    <div class="glass-card flex flex-col flex-[1] min-h-[200px]">
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>
-                                <span class="text-sm font-bold text-emerald-400 tracking-wider">입력 소스 C</span>
-                            </div>
-                            <span class="text-[10px] font-mono bg-emerald-500/10 text-emerald-300 px-2 py-1 rounded border border-emerald-500/20">최대 100개</span>
-                        </div>
-                        <textarea id="barcode-input-3" class="flex-1 resize-none !bg-opacity-50 !font-mono text-sm leading-relaxed" placeholder="// 데이터를 여기에 붙여넣으세요..."></textarea>
-                    </div>
-                    
-                    <div class="glass-card flex flex-col flex-[2] min-h-[400px] bg-[var(--bg-glass)]">
-                        <div class="flex items-center gap-2 mb-4 sticky top-0 z-10">
-                            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <span class="text-xs font-bold text-[var(--text-secondary)] uppercase">바코드 이미지 C</span>
-                        </div>
-                        <div id="barcode-output-3" class="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
-                            <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
-                                <span class="font-mono text-xs">바코드 생성 대기 중...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+  </main>
 </div>
 
-<!-- Scripts -->
+<div class="toasts" id="toasts"></div>
+
+<!-- 인쇄 전용 컨테이너 -->
+<div id="print-root"></div>
+<style id="print-page-style">@page { size: 50mm 30mm; margin: 0; }</style>
+
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Theme Management
-        function initTheme() {
-            const savedTheme = localStorage.getItem('barcode-theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        }
+(function () {
+  'use strict';
 
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('barcode-theme', newTheme);
-        }
+  /* ==========================================================
+     상수 / 저장소
+     ========================================================== */
+  const PREFIX_A = '179-RCRT1-';   // 소스 A 자동 접두어
+  const MAX_PER_SOURCE = 100;
+  const MM_PX = 96 / 25.4;         // 1mm 를 CSS px 로
+  const LS = {
+    theme:   'bennett.theme',
+    prefix:  'bennett.prefixA',
+    prefixP: 'bennett.prefixP',
+    gen:     'bennett.gen',
+    inputs:  'bennett.inputs',
+    print:   'bennett.print'
+  };
 
-        initTheme();
+  const store = {
+    get(k, fb) {
+      try { const v = localStorage.getItem(k); return v === null ? fb : JSON.parse(v); }
+      catch (e) { return fb; }
+    },
+    set(k, v) {
+      try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {}
+    }
+  };
 
-        // UI Elements
-        const ui = {
-            appContainer: document.getElementById('app-container'),
-            sidebar: document.getElementById('sidebar'),
-            sidebarToggle: document.getElementById('sidebar-toggle'), // mobile only
-            sidebarOverlay: document.getElementById('sidebar-overlay'),
-            barcodeInputs: [
-                document.getElementById('barcode-input-1'),
-                document.getElementById('barcode-input-2'),
-                document.getElementById('barcode-input-3')
-            ],
-            barcodeOutputs: [
-                document.getElementById('barcode-output-1'),
-                document.getElementById('barcode-output-2'),
-                document.getElementById('barcode-output-3')
-            ],
-            generateBtn: document.getElementById('generate-btn'),
-            copyAllBtn: document.getElementById('copy-all-btn'),
-            resetBtn: document.getElementById('reset-btn'), // New Reset Button
-            formatSelector: document.getElementById('barcode-format'),
-            widthSlider: document.getElementById('barcode-width'),
-            widthValue: document.getElementById('barcode-width-value'),
-            heightSlider: document.getElementById('barcode-height'),
-            heightValue: document.getElementById('barcode-height-value'),
-            displayValueCheckbox: document.getElementById('display-value'),
-            themeToggle: document.getElementById('theme-toggle'),
-        };
+  const $  = (s) => document.querySelector(s);
+  const $$ = (s) => Array.from(document.querySelectorAll(s));
 
-        let debounceTimer;
+  // QR 이 한글을 담을 수 있도록 UTF-8 인코더를 쓴다
+  if (window.qrcode && qrcode.stringToBytesFuncs && qrcode.stringToBytesFuncs['UTF-8']) {
+    qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
+  }
 
-        // Event Listeners
-        ui.generateBtn.addEventListener('click', generateBarcodes);
-        ui.copyAllBtn.addEventListener('click', copyAllBarcodes);
-        ui.resetBtn.addEventListener('click', resetAll);
-        ui.themeToggle.addEventListener('click', toggleTheme);
-        
-        ui.barcodeInputs.forEach(input => {
-            input.addEventListener('input', () => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(generateBarcodes, 500);
-            });
-        });
-        
-        ui.formatSelector.addEventListener('change', generateBarcodes);
-        ui.widthSlider.addEventListener('input', (e) => {
-            ui.widthValue.textContent = parseFloat(e.target.value).toFixed(1);
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(generateBarcodes, 500);
-        });
-        ui.heightSlider.addEventListener('input', (e) => {
-            ui.heightValue.textContent = e.target.value + 'px';
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(generateBarcodes, 500);
-        });
-        ui.displayValueCheckbox.addEventListener('change', generateBarcodes);
+  /* ==========================================================
+     토스트
+     ========================================================== */
+  const toastBox = $('#toasts');
+  function toast(msg, type) {
+    const el = document.createElement('div');
+    el.className = 'toast ' + (type || '');
+    el.innerHTML = '<span class="dot"></span><span></span>';
+    el.lastChild.textContent = msg;
+    toastBox.appendChild(el);
+    setTimeout(() => {
+      el.classList.add('out');
+      setTimeout(() => el.remove(), 260);
+    }, 2600);
+  }
 
-        // Sidebar Mobile Logic
-        const toggleSidebar = () => {
-            ui.sidebar.classList.toggle('open');
-            const isOpen = ui.sidebar.classList.contains('open');
-            ui.sidebarOverlay.classList.toggle('hidden', !isOpen);
-            // Simple animation handling
-            if (isOpen) {
-                 ui.sidebar.style.transform = 'translateX(0)';
-            } else {
-                 ui.sidebar.style.transform = ''; // reset to css default
-            }
-        };
+  /* ==========================================================
+     테마
+     ========================================================== */
+  const root = document.documentElement;
+  root.setAttribute('data-theme', store.get(LS.theme, 'dark'));
+  $('#theme-btn').addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    store.set(LS.theme, next);
+  });
 
-        ui.sidebarToggle.addEventListener('click', toggleSidebar);
-        ui.sidebarOverlay.addEventListener('click', toggleSidebar);
-        
-        // --- SCANNER LOGIC START ---
-        let barcodeBuffer = "";
-        let lastKeyTime = Date.now();
-        const SCAN_TIMEOUT = 100; // Time between keys for it to be considered a scan
-
-        document.addEventListener('keydown', (e) => {
-            // 입력창에 포커스가 있으면 일반 타이핑으로 간주
-            if (['TEXTAREA', 'INPUT', 'SELECT'].includes(document.activeElement.tagName)) return;
-
-            const currentTime = Date.now();
-            
-            // 키 입력 간격이 너무 길면 버퍼 초기화 (사람 손 입력 구분)
-            if (currentTime - lastKeyTime > SCAN_TIMEOUT && barcodeBuffer.length > 0) {
-                barcodeBuffer = "";
-            }
-            lastKeyTime = currentTime;
-
-            if (e.key === 'Enter') {
-                if (barcodeBuffer.length > 0) {
-                    handleScanVerification(barcodeBuffer);
-                    barcodeBuffer = "";
-                }
-                return;
-            }
-
-            // 출력 가능한 문자만 버퍼에 추가 (단일 문자)
-            if (e.key.length === 1) {
-                barcodeBuffer += e.key;
-            }
-        });
-
-        function handleScanVerification(scannedCode) {
-            // 모든 바코드 카드를 검색하여 데이터 값과 일치하는 것 찾기
-            const allCards = document.querySelectorAll('.barcode-card');
-            let found = false;
-
-            allCards.forEach(card => {
-                if (card.dataset.value === scannedCode) {
-                    card.classList.add('scanned');
-                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    found = true;
-                }
-            });
-
-            if (found) {
-                showToast(`스캔 확인: ${scannedCode}`, 'success');
-            }
-        }
-        // --- SCANNER LOGIC END ---
-
-        // Reset Logic
-        function resetAll() {
-            if (!confirm('모든 입력 데이터와 설정을 초기화하시겠습니까?')) return;
-            
-            // Inputs
-            ui.barcodeInputs.forEach(input => input.value = '');
-            
-            // Outputs
-            ui.barcodeOutputs.forEach(output => {
-                output.innerHTML = `
-                    <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
-                        <span class="font-mono text-xs">입력 대기 중...</span>
-                    </div>`;
-            });
-            
-            // Settings
-            ui.formatSelector.value = 'CODE128';
-            ui.widthSlider.value = 2;
-            ui.widthValue.textContent = '2.0';
-            ui.heightSlider.value = 100;
-            ui.heightValue.textContent = '100px';
-            ui.displayValueCheckbox.checked = true;
-
-            showToast('모든 설정이 초기화되었습니다.', 'success');
-        }
-
-        // Barcode Generation
-        function generateBarcodes() {
-            ui.generateBtn.disabled = true;
-            ui.copyAllBtn.disabled = true;
-            
-            // Loading state for button
-            const originalBtnHtml = ui.generateBtn.innerHTML;
-            ui.generateBtn.innerHTML = `<span class="animate-pulse">처리 중...</span>`;
-
-            setTimeout(() => {
-                try {
-                    const settings = {
-                        format: ui.formatSelector.value,
-                        width: parseFloat(ui.widthSlider.value),
-                        height: parseInt(ui.heightSlider.value, 10),
-                        displayValue: ui.displayValueCheckbox.checked,
-                    };
-
-                    ui.barcodeInputs.forEach((input, colIndex) => {
-                        const output = ui.barcodeOutputs[colIndex];
-                        output.innerHTML = '';
-
-                        let values = [];
-                        const lines = input.value.split('\n').filter(line => line.trim() !== '');
-                        
-                        // Basic header detection logic same as before
-                        if (lines.length > 0) {
-                            const headers = lines[0].split('\t').map(h => h.trim().toLowerCase());
-                            const barcodeIndex = headers.indexOf('barcode');
-                            if (barcodeIndex !== -1) {
-                                values = lines.slice(1).map(l => {
-                                    const c = l.split('\t');
-                                    return c[barcodeIndex] ? c[barcodeIndex].trim() : '';
-                                }).filter(b => b !== '');
-                            } else {
-                                values = lines.map(v => v.trim());
-                            }
-                        }
-
-                        if (values.length === 0) {
-                            output.innerHTML = `
-                            <div class="h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] opacity-50 py-10">
-                                <span class="font-mono text-xs">데이터 대기 중...</span>
-                            </div>`;
-                            return;
-                        }
-
-                        if (values.length > 100) {
-                            output.innerHTML = '<div class="text-center py-10 text-[var(--accent-secondary)] font-bold">⚠️ 제한: 100개</div>';
-                            return;
-                        }
-
-                        // Generate Items
-                        values.forEach((value, index) => {
-                            const item = document.createElement('div');
-                            item.className = 'barcode-card';
-                            item.dataset.value = value; // 스캐너 감지용 데이터 속성 추가
-                            
-                            // SVG Wrapper
-                            const svgWrapper = document.createElement('div');
-                            svgWrapper.className = 'flex justify-center p-2 overflow-hidden';
-                            
-                            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                            svg.id = `barcode-${colIndex}-${index}`;
-                            svgWrapper.appendChild(svg);
-                            
-                            // Actions
-                            const actions = document.createElement('div');
-                            actions.className = 'barcode-actions';
-                            
-                            const copyBtn = document.createElement('button');
-                            copyBtn.className = 'action-btn';
-                            copyBtn.textContent = '이미지 복사';
-                            copyBtn.onclick = () => copySingleBarcodeImage(svg, value);
-                            
-                            actions.appendChild(copyBtn);
-                            
-                            item.appendChild(svgWrapper);
-                            item.appendChild(actions);
-                            output.appendChild(item);
-
-                            try {
-                                JsBarcode(`#${svg.id}`, value, {
-                                    format: settings.format,
-                                    width: settings.width,
-                                    height: settings.height,
-                                    displayValue: settings.displayValue,
-                                    font: "JetBrains Mono", // Use mono font for barcode text
-                                    margin: 0,
-                                    textMargin: 5
-                                });
-                            } catch (e) {
-                                svgWrapper.innerHTML = `<div class="text-pink-500 text-xs font-mono p-2 text-center">형식 오류<br>${value}</div>`;
-                            }
-                        });
-                    });
-
-                } finally {
-                    ui.generateBtn.disabled = false;
-                    ui.copyAllBtn.disabled = false;
-                    ui.generateBtn.innerHTML = originalBtnHtml;
-                }
-            }, 100); // Slight delay for UI responsiveness
-        }
-        
-        async function copySingleBarcodeImage(svgElement, value) {
-            try {
-                const pngBlob = await svgToPngBlob(svgElement);
-                await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })]);
-                showToast(`'${value}' 바코드 복사 완료!`, 'success');
-            } catch (err) {
-                console.error(err);
-                showToast('복사 실패', 'error');
-            }
-        }
-        
-        async function copyAllBarcodes() {
-            const allSvgs = [];
-            ui.barcodeOutputs.forEach(output => {
-                const svgs = Array.from(output.querySelectorAll('svg'));
-                allSvgs.push(...svgs);
-            });
-
-            if (allSvgs.length === 0) {
-                showToast('내보낼 바코드가 없습니다', 'error');
-                return;
-            }
-
-            showToast('전체 이미지 생성 중...', 'success');
-
-            try {
-                const scale = 2;
-                const padding = 30;
-
-                const barcodeImages = [];
-                let maxWidth = 0;
-                let totalHeight = padding;
-
-                for (const svg of allSvgs) {
-                    const rect = svg.getBoundingClientRect();
-                    const pngBlob = await svgToPngBlob(svg, scale, 0);
-                    const bmp = await createImageBitmap(pngBlob);
-                    const width = rect.width * scale;
-                    const height = rect.height * scale;
-                    
-                    barcodeImages.push({ bmp, width, height });
-                    maxWidth = Math.max(maxWidth, width);
-                    totalHeight += height + padding;
-                }
-                
-                const canvas = document.createElement('canvas');
-                canvas.width = maxWidth + (padding * 2);
-                canvas.height = totalHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                let currentY = padding;
-                for (const { bmp, height } of barcodeImages) {
-                    ctx.drawImage(bmp, (canvas.width - maxWidth)/2 + (maxWidth - bmp.width)/2, currentY); // Center align
-                    currentY += height + padding;
-                }
-
-                canvas.toBlob(async (finalBlob) => {
-                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': finalBlob })]);
-                    showToast(`${allSvgs.length}개 바코드 복사 완료!`, 'success');
-                }, 'image/png');
-            } catch (err) {
-                console.error(err);
-                showToast('전체 내보내기 실패', 'error');
-            }
-        }
-
-        function svgToPngBlob(svgElement, scale = 2, padding = 30) {
-            return new Promise((resolve, reject) => {
-                const svgString = new XMLSerializer().serializeToString(svgElement);
-                const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-                const url = URL.createObjectURL(svgBlob);
-                const img = new Image();
-                img.src = url;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const pad = padding * scale;
-                    canvas.width = img.width * scale + pad * 2;
-                    canvas.height = img.height * scale + pad * 2;
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = 'white'; // Barcode bg
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, pad, pad, img.width * scale, img.height * scale);
-                    URL.revokeObjectURL(url);
-                    canvas.toBlob(resolve, 'image/png');
-                };
-                img.onerror = reject;
-            });
-        }
-        
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            const colorClass = type === 'success' ? 'border-emerald-500 text-emerald-400' : 'border-pink-500 text-pink-400';
-            
-            toast.className = `fixed bottom-8 right-8 bg-[var(--bg-glass)] backdrop-blur-md border ${colorClass} py-3 px-6 rounded-lg shadow-2xl z-50 font-mono text-sm font-bold flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-300`;
-            toast.innerHTML = `
-                <span class="w-2 h-2 rounded-full ${type === 'success' ? 'bg-emerald-500' : 'bg-pink-500'}"></span>
-                ${message}
-            `;
-            
-            document.body.appendChild(toast);
-            
-            // Animation
-            requestAnimationFrame(() => {
-                toast.classList.remove('translate-y-10', 'opacity-0');
-            });
-            
-            setTimeout(() => {
-                toast.classList.add('translate-y-10', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
+  /* ==========================================================
+     뷰 전환
+     ========================================================== */
+  let currentView = 'gen';
+  $$('.nav-item').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const v = btn.dataset.view;
+      if (v === currentView) return;
+      currentView = v;
+      $$('.nav-item').forEach((b) => b.classList.toggle('active', b === btn));
+      $$('.view').forEach((s) => s.classList.toggle('active', s.id === 'view-' + v));
+      if (v === 'print') renderPreview();
     });
+  });
+
+  /* ==========================================================
+     공통 — SVG 를 컨테이너 폭에 맞게 늘어나도록 정리
+     ========================================================== */
+  function fluidSvg(svg) {
+    const w = svg.getAttribute('width');
+    const h = svg.getAttribute('height');
+    if (w && h) {
+      svg.setAttribute('viewBox', '0 0 ' + parseFloat(w) + ' ' + parseFloat(h));
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      svg.removeAttribute('width');
+      svg.removeAttribute('height');
+    }
+  }
+
+  /**
+   * 자연 크기를 유지한 채 viewBox 만 달아준다.
+   * width/height 속성이 남아 있어 값 길이와 무관하게 바 굵기가 일정하고,
+   * 컨테이너보다 넓을 때만 CSS 가 비율대로 줄인다.
+   */
+  function sizedSvg(svg) {
+    const w = svg.getAttribute('width');
+    const h = svg.getAttribute('height');
+    if (w && h) {
+      svg.setAttribute('viewBox', '0 0 ' + parseFloat(w) + ' ' + parseFloat(h));
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    }
+  }
+
+  /* ==========================================================
+     뷰 1 — 대량 생성기
+     ========================================================== */
+  const inputs  = [$('#in-0'), $('#in-1'), $('#in-2')];
+  const counts  = [$('#cnt-0'), $('#cnt-1'), $('#cnt-2')];
+  const grid    = $('#grid');
+  const prefixToggle = $('#prefix-toggle');
+
+  const SRC_NAMES = ['소스 A', '소스 B', '소스 C'];
+
+  // ---- 접두어 ----
+  prefixToggle.checked = store.get(LS.prefix, true);
+
+  /**
+   * 값 앞에 접두어를 붙인다. 두 화면이 같이 쓴다.
+   * 이미 179-RCRT1- 로 시작하면(대소문자 무시) 그대로 둔다.
+   */
+  function applyPrefix(value, on) {
+    if (!on || !value) return { value: value, added: false };
+    if (value.toUpperCase().startsWith(PREFIX_A.toUpperCase())) {
+      return { value: value, added: false };
+    }
+    return { value: PREFIX_A + value, added: true };
+  }
+
+  function withPrefix(value) {
+    return applyPrefix(value, prefixToggle.checked);
+  }
+
+  prefixToggle.addEventListener('change', () => {
+    store.set(LS.prefix, prefixToggle.checked);
+    toast(prefixToggle.checked
+      ? '소스 A 접두어 자동 입력 ON — ' + PREFIX_A
+      : '소스 A 접두어 자동 입력 OFF', prefixToggle.checked ? 'ok' : '');
+    generate();
+  });
+
+  // ---- 설정 ----
+  const settings = Object.assign({
+    fmt: 'CODE128', bw: 1.6, bh: 100, cs: 380, showval: true
+  }, store.get(LS.gen, {}));
+
+  $('#fmt').value      = settings.fmt;
+  $('#bw').value       = settings.bw;
+  $('#bh').value       = settings.bh;
+  $('#cs').value       = settings.cs;
+  $('#showval').checked = settings.showval;
+  $('#bw-v').textContent = parseFloat(settings.bw).toFixed(1);
+  $('#bh-v').textContent = settings.bh + 'px';
+  $('#cs-v').textContent = settings.cs;
+  root.style.setProperty('--card-w', settings.cs + 'px');
+
+  function saveSettings() { store.set(LS.gen, settings); }
+
+  $('#fmt').addEventListener('change', (e) => {
+    settings.fmt = e.target.value; saveSettings(); generate();
+  });
+  $('#bw').addEventListener('input', (e) => {
+    settings.bw = parseFloat(e.target.value);
+    $('#bw-v').textContent = settings.bw.toFixed(1);
+    saveSettings(); debounce(generate, 260);
+  });
+  $('#bh').addEventListener('input', (e) => {
+    settings.bh = parseInt(e.target.value, 10);
+    $('#bh-v').textContent = settings.bh + 'px';
+    saveSettings(); debounce(generate, 260);
+  });
+  $('#cs').addEventListener('input', (e) => {
+    settings.cs = parseInt(e.target.value, 10);
+    $('#cs-v').textContent = settings.cs;
+    root.style.setProperty('--card-w', settings.cs + 'px');
+    saveSettings();
+    normalizeScale();
+  });
+  $('#showval').addEventListener('change', (e) => {
+    settings.showval = e.target.checked; saveSettings(); generate();
+  });
+
+  // ---- 입력 복원 ----
+  const savedInputs = store.get(LS.inputs, ['', '', '']);
+  inputs.forEach((t, i) => { t.value = savedInputs[i] || ''; });
+
+  let debTimer;
+  function debounce(fn, ms) {
+    clearTimeout(debTimer);
+    debTimer = setTimeout(fn, ms);
+  }
+
+  inputs.forEach((t) => {
+    t.addEventListener('input', () => {
+      store.set(LS.inputs, inputs.map((x) => x.value));
+      debounce(generate, 420);
+    });
+  });
+
+  /**
+   * 텍스트를 바코드 값 배열로 바꾼다.
+   * 첫 줄에 barcode 헤더가 있는 TSV 면 해당 열만 뽑는다.
+   */
+  function parseValues(text) {
+    const lines = text.split('\n').filter((l) => l.trim() !== '');
+    if (!lines.length) return [];
+
+    const headers = lines[0].split('\t').map((h) => h.trim().toLowerCase());
+    const idx = headers.indexOf('barcode');
+    if (idx !== -1) {
+      return lines.slice(1)
+        .map((l) => { const c = l.split('\t'); return c[idx] ? c[idx].trim() : ''; })
+        .filter((v) => v !== '');
+    }
+    return lines.map((l) => l.trim());
+  }
+
+  let activeFilter = 'all';
+
+  function generate() {
+    const cols = inputs.map((t, i) => {
+      let vals = parseValues(t.value);
+      let over = false;
+      if (vals.length > MAX_PER_SOURCE) { vals = vals.slice(0, MAX_PER_SOURCE); over = true; }
+
+      const items = vals.map((raw) => {
+        if (i === 0) {
+          const r = withPrefix(raw);
+          return { value: r.value, added: r.added };
+        }
+        return { value: raw, added: false };
+      });
+      return { items: items, over: over };
+    });
+
+    cols.forEach((c, i) => { counts[i].textContent = c.items.length; });
+
+    const total = cols.reduce((n, c) => n + c.items.length, 0);
+    $('#total').textContent = total;
+
+    grid.innerHTML = '';
+    grid.classList.toggle('blank', total === 0);
+
+    if (total === 0) {
+      grid.innerHTML =
+        '<div class="empty">' +
+          '<div class="empty-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor">' +
+          '<path d="M3 5v14M6.5 5v14M10 5v14M13.5 5v10M17 5v14M20.5 5v14" stroke-linecap="round"/></svg></div>' +
+          '<h3>아직 생성된 바코드가 없습니다</h3>' +
+          '<p>위 입력창에 값을 넣으면 자동으로 생성됩니다</p>' +
+        '</div>';
+      $('#copyall-btn').disabled = true;
+      return;
+    }
+    $('#copyall-btn').disabled = false;
+
+    cols.forEach((col, ci) => {
+      if (!col.items.length) return;
+
+      const group = document.createElement('div');
+      group.className = 'grid-group';
+      group.dataset.src = ci;
+      if (activeFilter !== 'all' && activeFilter !== String(ci)) group.classList.add('hidden');
+
+      const head = document.createElement('div');
+      head.className = 'group-head';
+      head.innerHTML =
+        '<span class="bar"></span>' +
+        '<span class="name">' + SRC_NAMES[ci] + '</span>' +
+        '<span class="rule"></span>' +
+        '<span class="n">' + col.items.length + '개' + (col.over ? ' · 100개 초과분 제외' : '') + '</span>';
+      group.appendChild(head);
+
+      const cards = document.createElement('div');
+      cards.className = 'cards';
+      group.appendChild(cards);
+      grid.appendChild(group);
+
+      col.items.forEach((item, ii) => {
+        cards.appendChild(makeCard(item, ci, ii));
+      });
+
+      if (col.over) {
+        toast(SRC_NAMES[ci] + ' — 100개를 넘어 앞 100개만 생성했습니다', 'bad');
+      }
+    });
+
+    applyFilterLayout();
+    normalizeScale();
+  }
+
+  function makeCard(item, ci, ii) {
+    const card = document.createElement('div');
+    card.className = 'bc';
+    card.dataset.value = item.value;
+    card.style.animationDelay = Math.min(ii * 14, 340) + 'ms';
+
+    const idx = document.createElement('span');
+    idx.className = 'bc-idx';
+    idx.textContent = String(ii + 1).padStart(2, '0');
+    card.appendChild(idx);
+
+    if (item.added) {
+      const pre = document.createElement('span');
+      pre.className = 'bc-pre';
+      pre.textContent = 'AUTO';
+      pre.title = PREFIX_A + ' 이 자동으로 붙었습니다';
+      card.appendChild(pre);
+    }
+
+    const svgBox = document.createElement('div');
+    svgBox.className = 'bc-svg';
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svgBox.appendChild(svg);
+    card.appendChild(svgBox);
+
+    let ok = true;
+    try {
+      JsBarcode(svg, item.value, {
+        format: settings.fmt,
+        width: settings.bw,
+        height: settings.bh,
+        displayValue: settings.showval,
+        font: 'IBM Plex Mono',
+        fontSize: 15,
+        textMargin: 4,
+        margin: 0,
+        background: '#00000000',
+        lineColor: '#16150F'
+      });
+      sizedSvg(svg);
+      svg.dataset.natw = svg.getAttribute('width');
+      svg.dataset.nath = svg.getAttribute('height');
+    } catch (e) {
+      ok = false;
+    }
+
+    if (!ok) {
+      card.classList.add('err');
+      svgBox.remove();
+      const err = document.createElement('div');
+      err.className = 'bc-err';
+      err.innerHTML = '형식 오류 · ' + settings.fmt + '<span></span>';
+      err.lastChild.textContent = item.value;
+      card.appendChild(err);
+      return card;
+    }
+
+    const foot = document.createElement('div');
+    foot.className = 'bc-foot';
+    const val = document.createElement('span');
+    val.className = 'bc-val';
+    val.textContent = item.value;
+    val.title = item.value;
+    const copy = document.createElement('button');
+    copy.className = 'bc-copy';
+    copy.textContent = '복사';
+    copy.addEventListener('click', () => copyOne(svg, item.value));
+    foot.appendChild(val);
+    foot.appendChild(copy);
+    card.appendChild(foot);
+
+    return card;
+  }
+
+  /**
+   * 모든 바코드에 같은 배율을 먹인다.
+   * 가장 긴 값이 카드에 들어가는 배율을 구해 전부에 적용하므로,
+   * 값 길이가 달라도 소스가 달라도 화면·인쇄 바 굵기가 똑같다.
+   */
+  function normalizeScale() {
+    const svgs = $$('.bc:not(.err) .bc-svg svg');
+    if (!svgs.length) return;
+
+    const box = $('.bc-svg');
+    const cs = getComputedStyle(box);
+    const avail = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if (avail <= 0) return;
+
+    let maxW = 0;
+    svgs.forEach((s) => {
+      const w = parseFloat(s.dataset.natw) || 0;
+      if (w > maxW) maxW = w;
+    });
+    if (!maxW) return;
+
+    const scale = Math.min(1, avail / maxW);
+    svgs.forEach((s) => {
+      const w = parseFloat(s.dataset.natw) || 0;
+      const h = parseFloat(s.dataset.nath) || 0;
+      s.setAttribute('width', (w * scale).toFixed(1));
+      s.setAttribute('height', (h * scale).toFixed(1));
+    });
+  }
+
+  // ---- 필터 ----
+  /** 한 소스만 볼 때는 열을 하나로 좁혀 가운데 세운다 */
+  function applyFilterLayout() {
+    const solo = activeFilter !== 'all' &&
+      $$('.grid-group').filter((g) => !g.classList.contains('hidden')).length <= 1;
+    grid.classList.toggle('solo', solo && !grid.classList.contains('blank'));
+  }
+
+  $('#filters').addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter');
+    if (!btn) return;
+    activeFilter = btn.dataset.f;
+    $$('.filter').forEach((b) => b.classList.toggle('active', b === btn));
+    $$('.grid-group').forEach((g) => {
+      g.classList.toggle('hidden', activeFilter !== 'all' && activeFilter !== g.dataset.src);
+    });
+    applyFilterLayout();
+  });
+
+  // ---- 입력 접기 ----
+  $('#collapse-btn').addEventListener('click', () => {
+    const box = $('#inputs');
+    box.classList.toggle('collapsed');
+    const on = box.classList.contains('collapsed');
+    $('#collapse-btn').querySelector('span').textContent = on ? '입력 펼치기' : '입력 접기';
+    $('#collapse-btn').querySelector('svg').style.transform = on ? 'rotate(180deg)' : '';
+  });
+
+  $('#gen-btn').addEventListener('click', () => {
+    generate();
+    toast('바코드를 생성했습니다', 'ok');
+  });
+
+  // ---- 초기화 ----
+  $('#reset-btn').addEventListener('click', () => {
+    if (!confirm('입력값과 설정을 모두 초기화할까요?')) return;
+    inputs.forEach((t) => { t.value = ''; });
+    store.set(LS.inputs, ['', '', '']);
+
+    settings.fmt = 'CODE128'; settings.bw = 1.6; settings.bh = 100; settings.cs = 380; settings.showval = true;
+    $('#fmt').value = 'CODE128';
+    $('#bw').value = 1.6;  $('#bw-v').textContent = '1.6';
+    $('#bh').value = 100; $('#bh-v').textContent = '100px';
+    $('#cs').value = 380; $('#cs-v').textContent = '380';
+    root.style.setProperty('--card-w', '380px');
+    $('#showval').checked = true;
+    saveSettings();
+
+    generate();
+    toast('초기화했습니다', 'ok');
+  });
+
+  /* ==========================================================
+     이미지 복사 / 내보내기
+     ========================================================== */
+  function svgToPng(svgEl, scale, pad) {
+    return new Promise((resolve, reject) => {
+      const clone = svgEl.cloneNode(true);
+      const box = svgEl.getBoundingClientRect();
+      clone.setAttribute('width', box.width);
+      clone.setAttribute('height', box.height);
+
+      const str = new XMLSerializer().serializeToString(clone);
+      const url = URL.createObjectURL(new Blob([str], { type: 'image/svg+xml;charset=utf-8' }));
+      const img = new Image();
+
+      img.onload = () => {
+        const p = pad * scale;
+        const cv = document.createElement('canvas');
+        cv.width  = box.width * scale + p * 2;
+        cv.height = box.height * scale + p * 2;
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, cv.width, cv.height);
+        ctx.drawImage(img, p, p, box.width * scale, box.height * scale);
+        URL.revokeObjectURL(url);
+        cv.toBlob(resolve, 'image/png');
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('svg load fail')); };
+      img.src = url;
+    });
+  }
+
+  async function copyOne(svgEl, value) {
+    try {
+      const blob = await svgToPng(svgEl, 3, 16);
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      toast(value + ' 복사 완료', 'ok');
+    } catch (e) {
+      console.error(e);
+      toast('복사에 실패했습니다', 'bad');
+    }
+  }
+
+  $('#copyall-btn').addEventListener('click', async () => {
+    const svgs = $$('.bc:not(.err) .bc-svg svg');
+    if (!svgs.length) { toast('내보낼 바코드가 없습니다', 'bad'); return; }
+
+    toast(svgs.length + '개 이미지를 합치는 중…');
+    try {
+      const scale = 2, gap = 26;
+      const parts = [];
+      let maxW = 0, totalH = gap;
+
+      for (const svg of svgs) {
+        const box = svg.getBoundingClientRect();
+        const blob = await svgToPng(svg, scale, 0);
+        const bmp = await createImageBitmap(blob);
+        const w = box.width * scale, h = box.height * scale;
+        parts.push({ bmp: bmp, w: w, h: h });
+        maxW = Math.max(maxW, w);
+        totalH += h + gap;
+      }
+
+      const cv = document.createElement('canvas');
+      cv.width = maxW + gap * 2;
+      cv.height = totalH;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+
+      let y = gap;
+      for (const p of parts) {
+        ctx.drawImage(p.bmp, (cv.width - p.w) / 2, y);
+        y += p.h + gap;
+      }
+
+      cv.toBlob(async (blob) => {
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          toast(svgs.length + '개 바코드를 클립보드에 복사했습니다', 'ok');
+        } catch (e) {
+          console.error(e);
+          toast('클립보드 복사에 실패했습니다', 'bad');
+        }
+      }, 'image/png');
+    } catch (e) {
+      console.error(e);
+      toast('내보내기에 실패했습니다', 'bad');
+    }
+  });
+
+  /* ==========================================================
+     스캐너 검증 — 빠른 연속 키 입력을 스캔으로 간주
+     ========================================================== */
+  let buf = '', lastKey = 0;
+  const SCAN_GAP = 100;
+
+  document.addEventListener('keydown', (e) => {
+    if (currentView !== 'gen') return;
+    const tag = document.activeElement ? document.activeElement.tagName : '';
+    if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') return;
+
+    const now = Date.now();
+    if (now - lastKey > SCAN_GAP && buf.length) buf = '';
+    lastKey = now;
+
+    if (e.key === 'Enter') {
+      if (buf.length) { verifyScan(buf); buf = ''; }
+      return;
+    }
+    if (e.key.length === 1) buf += e.key;
+  });
+
+  function verifyScan(code) {
+    let hit = 0;
+    $$('.bc').forEach((card) => {
+      if (card.dataset.value === code) {
+        card.classList.remove('scanned');
+        void card.offsetWidth;              // 애니메이션 재시작
+        card.classList.add('scanned');
+        if (!hit) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        hit++;
+      }
+    });
+    if (hit) toast('스캔 확인 — ' + code, 'ok');
+    else toast('일치하는 바코드가 없습니다 — ' + code, 'bad');
+  }
+
+  /* ==========================================================
+     뷰 2 — 프린트 생성기
+     ========================================================== */
+  const P = {
+    code:    $('#p-code'),
+    target:  $('#p-target'),
+    purpose: $('#p-purpose'),
+    place:   $('#p-place'),
+    preset:  $('#p-preset'),
+    w:       $('#p-w'),
+    h:       $('#p-h'),
+    pad:     $('#p-pad'),
+    qty:     $('#p-qty'),
+    orient:  $('#p-orient'),
+    fmt:     $('#p-fmt'),
+    bh:      $('#p-bh'),
+    showval: $('#p-showval')
+  };
+
+  // 프린트 화면의 접두어 토글은 대량 생성기와 따로 기억한다
+  const pPrefix = $('#p-prefix-toggle');
+  pPrefix.checked = store.get(LS.prefixP, true);
+
+  pPrefix.addEventListener('change', () => {
+    store.set(LS.prefixP, pPrefix.checked);
+    toast(pPrefix.checked
+      ? '바코드 접두어 자동 입력 ON — ' + PREFIX_A
+      : '바코드 접두어 자동 입력 OFF', pPrefix.checked ? 'ok' : '');
+    renderPreview();
+  });
+
+  // 저장값 복원
+  const pSaved = store.get(LS.print, null);
+  if (pSaved) {
+    Object.keys(P).forEach((k) => {
+      if (pSaved[k] === undefined) return;
+      if (P[k].type === 'checkbox') P[k].checked = pSaved[k];
+      else P[k].value = pSaved[k];
+    });
+    $('#p-bh-v').textContent = P.bh.value + '%';
+  }
+
+  function savePrint() {
+    const o = {};
+    Object.keys(P).forEach((k) => {
+      o[k] = P[k].type === 'checkbox' ? P[k].checked : P[k].value;
+    });
+    store.set(LS.print, o);
+  }
+
+  // 프리셋 → 가로/세로
+  P.preset.addEventListener('change', () => {
+    const v = P.preset.value;
+    if (v !== 'custom') {
+      const p = v.split('x');
+      P.w.value = p[0];
+      P.h.value = p[1];
+    }
+    savePrint(); renderPreview();
+  });
+
+  // 가로/세로를 직접 고치면 프리셋을 '직접 입력'으로
+  [P.w, P.h].forEach((el) => {
+    el.addEventListener('input', () => {
+      const match = P.w.value + 'x' + P.h.value;
+      const has = Array.from(P.preset.options).some((o) => o.value === match);
+      P.preset.value = has ? match : 'custom';
+      savePrint(); renderPreview();
+    });
+  });
+
+  P.bh.addEventListener('input', () => {
+    $('#p-bh-v').textContent = P.bh.value + '%';
+    savePrint(); renderPreview();
+  });
+
+  [P.code, P.target, P.purpose, P.place, P.pad, P.qty, P.orient, P.fmt, P.showval]
+    .forEach((el) => {
+      el.addEventListener('input',  () => { savePrint(); renderPreview(); });
+      el.addEventListener('change', () => { savePrint(); renderPreview(); });
+    });
+
+  $('#p-clear').addEventListener('click', () => {
+    P.code.value = ''; P.target.value = ''; P.purpose.value = ''; P.place.value = '';
+    savePrint(); renderPreview();
+    toast('입력 내용을 비웠습니다', 'ok');
+  });
+
+  /** 현재 설정을 정규화해서 돌려준다 */
+  function printSpec() {
+    let w = parseFloat(P.w.value) || 50;
+    let h = parseFloat(P.h.value) || 30;
+    if (P.orient.value === 'landscape') { const t = w; w = h; h = t; }
+    return {
+      w: w,
+      h: h,
+      pad: Math.max(0, parseFloat(P.pad.value) || 0),
+      qty: Math.min(200, Math.max(1, parseInt(P.qty.value, 10) || 1)),
+      fmt: P.fmt.value,
+      bhPct: parseInt(P.bh.value, 10),
+      showval: P.showval.checked,
+      // 비운 항목은 라벨에서 제외한다
+      items: [
+        { k: '바코드', v: applyPrefix(P.code.value.trim(), pPrefix.checked).value },
+        { k: '대상',   v: P.target.value.trim() },
+        { k: '목적',   v: P.purpose.value.trim() },
+        { k: '위치',   v: P.place.value.trim() }
+      ].filter((r) => r.v !== '')
+    };
+  }
+
+  /**
+   * 값 하나를 코드 이미지로 만든다.
+   * 1D 바코드로 인코딩되면 1D, 실패하면(한글 등) QR 로 넘어간다.
+   */
+  function makeCode(value, fmt, showText) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    try {
+      JsBarcode(svg, value, {
+        format: fmt,
+        width: 2,
+        height: 100,
+        displayValue: showText,
+        font: 'IBM Plex Mono',
+        fontSize: 18,
+        textMargin: 2,
+        margin: 0,
+        background: '#FFFFFF',
+        lineColor: '#000000'
+      });
+      fluidSvg(svg);
+      return { el: svg, kind: '1d' };
+    } catch (e) { /* 1D 불가 → QR */ }
+
+    try {
+      const qr = qrcode(0, 'M');
+      qr.addData(value);
+      qr.make();
+      const holder = document.createElement('div');
+      holder.innerHTML = qr.createSvgTag({ scalable: true, margin: 1 });
+      const qsvg = holder.firstElementChild;
+      qsvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      return { el: qsvg, kind: 'qr' };
+    } catch (e) {
+      return { el: null, kind: 'err' };
+    }
+  }
+
+  /**
+   * 라벨 1장을 DOM 으로 만든다. 미리보기와 인쇄가 같은 함수를 쓴다.
+   */
+  function buildLabel(spec) {
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.style.width   = spec.w + 'mm';
+    label.style.height  = spec.h + 'mm';
+    label.style.padding = spec.pad + 'mm';
+
+    const inner = spec.h - spec.pad * 2;          // 사용 가능한 세로 (mm)
+    const n = spec.items.length;
+
+    if (n === 0) {
+      const e = document.createElement('div');
+      e.className = 'label-empty';
+      e.textContent = '내용을 입력하면 여기에 라벨이 표시됩니다';
+      label.appendChild(e);
+      return label;
+    }
+
+    const gap = Math.min(1.6, inner * 0.03);
+    label.style.gap = gap + 'mm';
+    label.style.justifyContent = 'stretch';
+
+    // 항목 하나에 돌아가는 높이 → 글자 크기의 기준
+    const slot = (inner - gap * (n - 1)) / n;
+    const base = Math.max(1.4, Math.min(3.2, slot * 0.2));
+
+    spec.items.forEach((it) => {
+      const code = makeCode(it.v, spec.fmt, spec.showval && n === 1);
+
+      const box = document.createElement('div');
+      box.className = 'li ' + (code.kind === 'qr' ? 'li-qr' : 'li-bar');
+      box.style.fontSize = base + 'mm';
+      if (code.kind === 'qr') box.style.gap = (base * 0.7) + 'mm';
+
+      if (code.kind === 'err') {
+        box.className = 'li li-bar';
+        const err = document.createElement('div');
+        err.className = 'li-err';
+        err.style.fontSize = (base * 0.85) + 'mm';
+        err.textContent = it.k + ' — 코드로 만들 수 없는 값입니다';
+        box.appendChild(err);
+        label.appendChild(box);
+        return;
+      }
+
+      const codeBox = document.createElement('div');
+      codeBox.className = 'li-code';
+      codeBox.appendChild(code.el);
+
+      if (code.kind === 'qr') {
+        // QR 은 정사각형 → 왼쪽에 코드, 오른쪽에 이름/값
+        const txt = document.createElement('div');
+        txt.className = 'li-txt';
+
+        const k = document.createElement('span');
+        k.className = 'li-key';
+        k.style.fontSize = (base * 0.72) + 'mm';
+        k.textContent = it.k;
+        txt.appendChild(k);
+
+        if (spec.showval) {
+          const v = document.createElement('span');
+          v.className = 'li-val';
+          v.style.fontSize = base + 'mm';
+          v.textContent = it.v;
+          txt.appendChild(v);
+        }
+
+        box.appendChild(codeBox);
+        box.appendChild(txt);
+      } else {
+        // 1D 는 가로로 길다 → 위에 이름, 아래에 바코드
+        // 이름 줄은 글자 높이만 차지하고, 남는 세로는 전부 바코드가 쓴다
+        const head = document.createElement('div');
+        head.className = 'li-head';
+        head.style.marginBottom = (base * 0.28) + 'mm';
+
+        const k = document.createElement('span');
+        k.className = 'li-key';
+        k.style.fontSize = (base * 0.72) + 'mm';
+        k.textContent = it.k;
+        head.appendChild(k);
+
+        // 값 텍스트는 항목이 하나일 때만 바코드가 직접 그린다
+        if (spec.showval && n > 1) {
+          const v = document.createElement('span');
+          v.className = 'li-val';
+          v.style.fontSize = (base * 0.86) + 'mm';
+          v.textContent = it.v;
+          head.appendChild(v);
+        }
+
+        codeBox.style.flex = '1 1 auto';
+        codeBox.style.minHeight = (slot * spec.bhPct / 100) + 'mm';
+        box.appendChild(head);
+        box.appendChild(codeBox);
+      }
+
+      label.appendChild(box);
+    });
+
+    return label;
+  }
+
+  /** 미리보기 렌더 — 무대 크기에 맞춰 자동 확대/축소 */
+  const stageWrap = $('#stage-wrap');
+
+  function renderPreview() {
+    const spec = printSpec();
+
+    // 접두어가 붙었으면 입력칸 아래에 실제 값을 보여준다
+    const pre = applyPrefix(P.code.value.trim(), pPrefix.checked);
+    const note = $('#p-code-preview');
+    note.textContent = pre.added ? '→ ' + pre.value : '';
+    note.classList.toggle('on', pre.added);
+
+    $('#stage-size').textContent = spec.w + ' × ' + spec.h + ' mm';
+    $('#stage-qty').textContent  = spec.qty;
+
+    stageWrap.innerHTML = '';
+    const label = buildLabel(spec);
+    label.classList.add('stage-shadow');
+    stageWrap.appendChild(label);
+
+    // 무대에 맞는 배율 계산
+    const area = stageWrap.parentElement;
+    const availW = area.clientWidth  - 48;
+    const availH = area.clientHeight - 48;
+    const pxW = spec.w * MM_PX;
+    const pxH = spec.h * MM_PX;
+
+    let zoom = Math.min(availW / pxW, availH / pxH);
+    if (!isFinite(zoom) || zoom <= 0) zoom = 1;
+    zoom = Math.max(0.25, Math.min(4, zoom));
+
+    label.style.transform = 'scale(' + zoom + ')';
+    label.style.transformOrigin = 'center center';
+    stageWrap.style.width  = (pxW * zoom) + 'px';
+    stageWrap.style.height = (pxH * zoom) + 'px';
+    label.style.position = 'absolute';
+    label.style.left = '50%';
+    label.style.top = '50%';
+    label.style.marginLeft = (-pxW / 2) + 'px';
+    label.style.marginTop  = (-pxH / 2) + 'px';
+
+    $('#stage-zoom').textContent = Math.round(zoom * 100) + '%';
+
+    // 코드 구성과 용지 여유 안내
+    const nQr  = label.querySelectorAll('.li-qr').length;
+    const nBar = label.querySelectorAll('.li-bar').length;
+    const nAll = nQr + nBar;
+
+    $('#stage-codes').textContent = nAll
+      ? ' · 코드 ' + nAll + '개 (1D ' + nBar + ' · QR ' + nQr + ')'
+      : '';
+
+    const hint = $('#stage-hint');
+    const needH = nAll * 11 + spec.pad * 2;      // 항목당 약 11mm 는 있어야 읽힌다
+    if (nAll && spec.h < needH) {
+      hint.textContent = '항목 ' + nAll + '개에는 세로 ' + Math.ceil(needH) + 'mm 이상을 권합니다';
+      hint.style.color = 'var(--warn)';
+    } else {
+      hint.textContent = '화면에 보이는 그대로 인쇄됩니다';
+      hint.style.color = '';
+    }
+  }
+
+  window.addEventListener('resize', () => {
+    if (currentView === 'print') debounce(renderPreview, 160);
+    else debounce(normalizeScale, 160);
+  });
+
+  /* ---------- 출력 ---------- */
+  $('#p-print').addEventListener('click', () => {
+    const spec = printSpec();
+
+    if (!spec.items.length) {
+      toast('출력할 내용이 없습니다. 항목을 하나 이상 입력하세요', 'bad');
+      return;
+    }
+
+    $('#print-page-style').textContent =
+      '@page { size: ' + spec.w + 'mm ' + spec.h + 'mm; margin: 0; }';
+
+    const rootEl = $('#print-root');
+    rootEl.innerHTML = '';
+    for (let i = 0; i < spec.qty; i++) {
+      const page = document.createElement('div');
+      page.className = 'print-page';
+      page.style.width  = spec.w + 'mm';
+      page.style.height = spec.h + 'mm';
+      page.appendChild(buildLabel(spec));
+      rootEl.appendChild(page);
+    }
+
+    // 폰트·바코드 렌더가 끝난 뒤 인쇄 대화상자를 띄운다
+    setTimeout(() => window.print(), 120);
+  });
+
+  window.addEventListener('afterprint', () => {
+    $('#print-root').innerHTML = '';
+  });
+
+  /* ==========================================================
+     시작
+     ========================================================== */
+  generate();
+  renderPreview();
+
+})();
 </script>
 
 </body>
