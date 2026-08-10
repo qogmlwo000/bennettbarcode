@@ -705,6 +705,32 @@ textarea::placeholder { color: var(--faint); }
   overflow: hidden;
   box-sizing: border-box;
 }
+/* 라벨은 위쪽 코드 영역과 아래쪽 텍스트 영역으로 나뉜다.
+   코드는 남는 세로를 전부 나눠 갖고, 텍스트는 제 높이만 쓴다. */
+.label-codes {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex; flex-direction: column;
+}
+.label-texts {
+  flex: 0 0 auto;
+  display: flex; flex-direction: column;
+}
+.tr {
+  display: flex; align-items: baseline; justify-content: center;
+  gap: 1.4mm; line-height: 1.25;
+  min-width: 0;
+}
+.tr .tr-key {
+  font-family: var(--f-mono);
+  font-weight: 600; letter-spacing: .03em;
+  color: #666; flex: none;
+}
+.tr .tr-val {
+  font-weight: 700; color: #000;
+  overflow: hidden; word-break: break-all;
+}
+
 /* 라벨 항목 — 항목마다 코드(1D 또는 QR) 한 개 */
 .li {
   flex: 1 1 0;
@@ -1038,17 +1064,13 @@ textarea::placeholder { color: var(--faint); }
               <div class="field-note" id="p-code-preview"></div>
             </div>
             <div class="field">
-              <label>대상 <span class="opt">선택</span></label>
+              <label>대상 <span class="opt">선택 · 코드</span></label>
               <input type="text" id="p-target" placeholder="예: 홍길동 / A제품">
             </div>
             <div class="field">
-              <label>목적 <span class="opt">선택</span></label>
-              <input type="text" id="p-purpose" placeholder="예: 출고 검수">
-            </div>
-            <div class="field">
-              <label>위치 <span class="opt">선택</span></label>
-              <input type="text" id="p-place" placeholder="예: A동 3층 R-12">
-              <div class="field-note">비워둔 항목은 라벨에서 자동으로 빠집니다.</div>
+              <label>비고란 <span class="opt">선택 · 글자만</span></label>
+              <input type="text" id="p-note" placeholder="예: A동 3층 R-12">
+              <div class="field-note">비고란은 코드로 만들지 않고 글자만 찍습니다. 비워둔 항목은 라벨에서 빠집니다.</div>
             </div>
           </div>
 
@@ -1734,8 +1756,7 @@ textarea::placeholder { color: var(--faint); }
   const P = {
     code:    $('#p-code'),
     target:  $('#p-target'),
-    purpose: $('#p-purpose'),
-    place:   $('#p-place'),
+    note:    $('#p-note'),
     preset:  $('#p-preset'),
     w:       $('#p-w'),
     h:       $('#p-h'),
@@ -1817,14 +1838,14 @@ textarea::placeholder { color: var(--faint); }
     savePrint(); renderPreview();
   });
 
-  [P.code, P.target, P.purpose, P.place, P.pad, P.qty, P.orient, P.fmt, P.showval]
+  [P.code, P.target, P.note, P.pad, P.qty, P.orient, P.fmt, P.showval]
     .forEach((el) => {
       el.addEventListener('input',  () => { savePrint(); renderPreview(); });
       el.addEventListener('change', () => { savePrint(); renderPreview(); });
     });
 
   $('#p-clear').addEventListener('click', () => {
-    P.code.value = ''; P.target.value = ''; P.purpose.value = ''; P.place.value = '';
+    P.code.value = ''; P.target.value = ''; P.note.value = '';
     savePrint(); renderPreview();
     toast('입력 내용을 비웠습니다', 'ok');
   });
@@ -1842,12 +1863,12 @@ textarea::placeholder { color: var(--faint); }
       fmt: P.fmt.value,
       bhPct: parseInt(P.bh.value, 10),
       showval: P.showval.checked,
-      // 비운 항목은 라벨에서 제외한다
+      // 바코드·대상만 코드로 찍고, 목적·위치는 글자만 넣는다.
+      // 비운 항목은 라벨에서 제외한다.
       items: [
-        { k: '바코드', v: applyPrefix(P.code.value.trim(), pPrefix.checked).value },
-        { k: '대상',   v: P.target.value.trim() },
-        { k: '목적',   v: P.purpose.value.trim() },
-        { k: '위치',   v: P.place.value.trim() }
+        { k: '바코드', v: applyPrefix(P.code.value.trim(), pPrefix.checked).value, code: true },
+        { k: '대상',   v: P.target.value.trim(), code: true },
+        { k: '비고',   v: P.note.value.trim(), code: false }
       ].filter((r) => r.v !== '')
     };
   }
@@ -1900,9 +1921,11 @@ textarea::placeholder { color: var(--faint); }
     label.style.padding = spec.pad + 'mm';
 
     const inner = spec.h - spec.pad * 2;          // 사용 가능한 세로 (mm)
-    const n = spec.items.length;
+    const codeItems = spec.items.filter((it) => it.code);
+    const textItems = spec.items.filter((it) => !it.code);
+    const n = codeItems.length;
 
-    if (n === 0) {
+    if (!spec.items.length) {
       const e = document.createElement('div');
       e.className = 'label-empty';
       e.textContent = '내용을 입력하면 여기에 라벨이 표시됩니다';
@@ -1910,15 +1933,29 @@ textarea::placeholder { color: var(--faint); }
       return label;
     }
 
-    const gap = Math.min(1.6, inner * 0.03);
-    label.style.gap = gap + 'mm';
+    // 코드끼리는 확실히 띄운다. 앞 코드와 다음 항목 이름이 붙어 보이면
+    // 어느 코드에 딸린 이름인지 헷갈린다.
+    const gapCode  = Math.max(2.5, Math.min(7, inner * 0.15));
+    const gapText  = Math.max(0.4, Math.min(1, inner * 0.02));
+    const gapBlock = Math.max(1.8, Math.min(4.5, inner * 0.09));
+
+    label.style.gap = gapBlock + 'mm';
     label.style.justifyContent = 'stretch';
 
-    // 항목 하나에 돌아가는 높이 → 글자 크기의 기준
-    const slot = (inner - gap * (n - 1)) / n;
-    const base = Math.max(1.4, Math.min(3.2, slot * 0.2));
+    const base = Math.max(1.4, Math.min(3.2, inner * 0.075));
 
-    spec.items.forEach((it) => {
+    // 코드 한 개에 돌아가는 세로 (비고 줄이 먹는 만큼 뺀다)
+    const textH = textItems.length
+      ? textItems.length * base * 1.35 + gapText * (textItems.length - 1) + gapBlock
+      : 0;
+    const slot = n ? Math.max(3, (inner - textH - gapCode * (n - 1)) / n) : 0;
+
+    // ---------- 코드 영역 ----------
+    const codeWrap = document.createElement('div');
+    codeWrap.className = 'label-codes';
+    codeWrap.style.gap = gapCode + 'mm';
+
+    codeItems.forEach((it) => {
       const code = makeCode(it.v, spec.fmt, spec.showval && n === 1);
 
       const box = document.createElement('div');
@@ -1933,7 +1970,7 @@ textarea::placeholder { color: var(--faint); }
         err.style.fontSize = (base * 0.85) + 'mm';
         err.textContent = it.k + ' — 코드로 만들 수 없는 값입니다';
         box.appendChild(err);
-        label.appendChild(box);
+        codeWrap.appendChild(box);
         return;
       }
 
@@ -1990,8 +2027,38 @@ textarea::placeholder { color: var(--faint); }
         box.appendChild(codeBox);
       }
 
-      label.appendChild(box);
+      codeWrap.appendChild(box);
     });
+
+    if (n) label.appendChild(codeWrap);
+
+    // ---------- 텍스트 영역 (비고) — 코드로 만들지 않는다 ----------
+    if (textItems.length) {
+      const textWrap = document.createElement('div');
+      textWrap.className = 'label-texts';
+      textWrap.style.gap = gapText + 'mm';
+
+      textItems.forEach((it) => {
+        const row = document.createElement('div');
+        row.className = 'tr';
+        row.style.fontSize = base + 'mm';
+
+        const k = document.createElement('span');
+        k.className = 'tr-key';
+        k.style.fontSize = (base * 0.72) + 'mm';
+        k.textContent = it.k;
+
+        const v = document.createElement('span');
+        v.className = 'tr-val';
+        v.textContent = it.v;
+
+        row.appendChild(k);
+        row.appendChild(v);
+        textWrap.appendChild(row);
+      });
+
+      label.appendChild(textWrap);
+    }
 
     return label;
   }
@@ -2040,18 +2107,21 @@ textarea::placeholder { color: var(--faint); }
     $('#stage-zoom').textContent = Math.round(zoom * 100) + '%';
 
     // 코드 구성과 용지 여유 안내
-    const nQr  = label.querySelectorAll('.li-qr').length;
-    const nBar = label.querySelectorAll('.li-bar').length;
-    const nAll = nQr + nBar;
+    const nQr   = label.querySelectorAll('.li-qr').length;
+    const nBar  = label.querySelectorAll('.li-bar').length;
+    const nAll  = nQr + nBar;
+    const nText = label.querySelectorAll('.tr').length;
 
-    $('#stage-codes').textContent = nAll
-      ? ' · 코드 ' + nAll + '개 (1D ' + nBar + ' · QR ' + nQr + ')'
-      : '';
+    let codeInfo = '';
+    if (nAll) codeInfo = ' · 코드 ' + nAll + '개 (1D ' + nBar + ' · QR ' + nQr + ')';
+    if (nText) codeInfo += (codeInfo ? ' + ' : ' · ') + '비고 ' + nText + '줄';
+    $('#stage-codes').textContent = codeInfo;
 
     const hint = $('#stage-hint');
-    const needH = nAll * 11 + spec.pad * 2;      // 항목당 약 11mm 는 있어야 읽힌다
+    // 코드는 한 개당 약 11mm, 비고 줄은 약 5mm 는 있어야 읽힌다
+    const needH = nAll * 11 + nText * 5 + spec.pad * 2;
     if (nAll && spec.h < needH) {
-      hint.textContent = '항목 ' + nAll + '개에는 세로 ' + Math.ceil(needH) + 'mm 이상을 권합니다';
+      hint.textContent = '세로 ' + Math.ceil(needH) + 'mm 이상을 권합니다';
       hint.style.color = 'var(--warn)';
     } else {
       hint.textContent = '화면에 보이는 그대로 인쇄됩니다';
